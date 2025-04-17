@@ -1,15 +1,31 @@
-# Desafio Java spring Boot - Naruto
+# 🍜 Exercício de Programação Orientada a Objetos (POO) em Java Spring Boot - Anime Naruto
 
-## Descrição Geral
+## 🍃 Descrição Geral
 
-Este projeto consiste em uma aplicação Java que explora os conceitos de Programação Orientada a Objetos (POO) através do universo do anime **Naruto** e a criação de uma **API ** utilizando **Spring Boot**.
+Este projeto consiste em uma aplicação Java que explora os conceitos de Programação Orientada a Objetos (POO) através do anime Naruto, além disso o desafio propõe a criação de uma API utilizando Spring Boot, que permite realizar um CRUD completo sobre personagens 
 
 O objetivo é unir teoria e prática em uma solução que implemente:
 - Conceitos de POO: Classes, Interfaces, Herança e Polimorfismo.
 
 ---
 
-## 💡 Parte 1: Programação Orientada a Objetos (POO) - Naruto
+## 🍣 Tecnologias Utilizadas
+
+| Ferramenta         | Finalidade                          |
+|---------------------|-------------------------------------|
+| Java 21 LTS         | Linguagem principal.                |
+| Spring Boot         | Framework para API REST.           |
+| Spring Security     | Controle de autenticação.          |
+| Spring Data JPA     | Acesso ao banco de dados.          |
+| JWT                 | Autenticação e autorização.        |
+| Swagger OpenAPI     | Documentação automática.           |
+| Flyway              | Controle de versionamento do banco.|
+| Docker              | Contêinerização da aplicação.      |
+| PostgreSQL / H2      | Banco de dados relacional.         |
+
+---
+
+## 🦊 Parte 1: Programação Orientada a Objetos (POO) - Naruto
 
 ### Requisitos
 
@@ -55,23 +71,27 @@ Especialista em Genjutsu.
 
 ---
 
-## ⚙️ Parte 2: Desenvolvimento da API RESTful
+
+## 🍡 Parte 2: Desenvolvimento da API
 
 ### Recursos
 A API deverá expor um CRUD completo para personagens (`Personagem`).
 
-### Endpoints Exemplo:
-```
-GET    /api/v1/personagens
-POST   /api/v1/personagens
-GET    /api/v1/personagens/{id}
-PUT    /api/v1/personagens/{id}
-DELETE /api/v1/personagens/{id}
-```
+### 🌸 Endpoints Padrão
+
+| Método | URL                           | Descrição                     |
+|--------|-------------------------------|--------------------------------|
+| `GET`  | `http://localhost:8080/api/v1/personagens/api/v1/personagens`         | Lista todos os personagens.    |
+| `POST` | `http://localhost:8080/api/v1/personagens/api/v1/personagens`         | Cria um novo personagem.       |
+| `GET`  | `http://localhost:8080/api/v1/personagens/api/v1/personagens/{id}`    | Busca um personagem pelo ID.   |
+| `GET`  | `http://localhost:8080/api/v1/personagens/{id}/usar-jutsu`| Irá realizar jutsu.   |
+| `GET`  | `http://localhost:8080/api/v1/personagens/{id}/desviar`| Irá realizar desviar.   |
+| `PUT`  | `http://localhost:8080/api/v1/personagens/api/v1/personagens/{id}`    | Atualiza dados do personagem.  |
+| `DELETE` | `http://localhost:8080/api/v1/personagens/api/v1/personagens/{id}`  | Remove um personagem.          |
 
 ---
 
-### ✅ Padrões e Boas Práticas
+### 🍙 Padrões e Boas Práticas
 
 - **Documentação com Swagger**
   - Interface automática de teste via `Swagger UI` (http://localhost:8080/swagger-ui.html).
@@ -95,7 +115,7 @@ DELETE /api/v1/personagens/{id}
   - Dockerfile configurado para build e deploy.
   - Comando padrão:
     ```
-  
+    docker compose up --build
     ```
 
 - **Flyway**
@@ -108,27 +128,18 @@ DELETE /api/v1/personagens/{id}
 
 ---
 
-## 💻 Tecnologias Utilizadas
 
-- Java 21LTS
-- Spring Boot
-- Spring Security
-- Spring Data JPA
-- Flyway
-- Swagger OpenAPI
-- JWT
-- Docker
-- PostgreSQL ou H2 Database
+## 🏮 Como Executar
 
----
+1. Clone o repositório:
+    ```bash
+    git clone https://github.com/sylviavitoria/DesafioNaruto.git
 
-## 🚀 Como Executar
-
-1. Clone o repositório.
+    
 2. Configure o `application.yml` com seu banco de dados.
 3. Rode a aplicação com:
     ```bash
-    ./mvnw spring-boot:run
+    mvn spring-boot:run
     ```
 4. Acesse:
     - Swagger: `http://localhost:8080/swagger-ui.html`
