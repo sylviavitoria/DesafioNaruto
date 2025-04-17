@@ -18,9 +18,6 @@ import org.springframework.web.bind.annotation.*;
 
 import com.sylviavitoria.naruto.dto.PersonagemAtualizarDTO;
 import com.sylviavitoria.naruto.dto.PersonagemDTO;
-import com.sylviavitoria.naruto.model.NinjaDeGenjutsu;
-import com.sylviavitoria.naruto.model.NinjaDeNinjutsu;
-import com.sylviavitoria.naruto.model.NinjaDeTaijutsu;
 import com.sylviavitoria.naruto.model.Personagem;
 import com.sylviavitoria.naruto.service.PersonagemService;
 
@@ -81,29 +78,7 @@ public class PersonagemController {
             @ApiResponse(responseCode = "500", description = "Erro interno do servidor")
     })
     public ResponseEntity<Personagem> criar(@RequestBody PersonagemDTO dto) {
-        Personagem personagem;
-
-        switch (dto.getTipoNinja().toUpperCase()) {
-            case "TAIJUTSU":
-                personagem = new NinjaDeTaijutsu();
-                break;
-            case "NINJUTSU":
-                personagem = new NinjaDeNinjutsu();
-                break;
-            case "GENJUTSU":
-                personagem = new NinjaDeGenjutsu();
-                break;
-            default:
-                throw new IllegalArgumentException("Tipo de ninja inválido");
-        }
-
-        personagem.setNome(dto.getNome());
-        personagem.setIdade(dto.getIdade());
-        personagem.setAldeia(dto.getAldeia());
-        personagem.setChakra(dto.getChakra());
-        personagem.setJutsus(dto.getJutsus());
-
-        return ResponseEntity.ok(service.salvar(personagem));
+        return ResponseEntity.ok(service.criarPersonagem(dto));
     }
 
     @PutMapping("/{id}")
@@ -117,28 +92,7 @@ public class PersonagemController {
     public ResponseEntity<Personagem> atualizar(
             @Parameter(description = "ID do personagem", required = true) @PathVariable Long id,
             @RequestBody PersonagemAtualizarDTO dto) {
-
-        Personagem personagem = service.buscarPorId(id);
-        if (dto.getNome() != null) {
-            personagem.setNome(dto.getNome());
-        }
-
-        if (dto.getIdade() != null) {
-            personagem.setIdade(dto.getIdade());
-        }
-
-        if (dto.getAldeia() != null) {
-            personagem.setAldeia(dto.getAldeia());
-        }
-
-        if (dto.getChakra() != null) {
-            personagem.setChakra(dto.getChakra());
-        }
-
-        if (dto.getJutsus() != null) {
-            personagem.setJutsus(dto.getJutsus());
-        }
-        return ResponseEntity.ok(service.salvar(personagem));
+        return ResponseEntity.ok(service.atualizarPersonagem(id, dto));
     }
 
     @DeleteMapping("/{id}")
@@ -162,34 +116,9 @@ public class PersonagemController {
             @ApiResponse(responseCode = "404", description = "Personagem não encontrado"),
             @ApiResponse(responseCode = "500", description = "Erro interno do servidor")
     })
-    public ResponseEntity<?> usarJutsu(
+    public ResponseEntity<Map<String, Object>> usarJutsu(
             @Parameter(description = "ID do personagem", required = true) @PathVariable Long id) {
-        Personagem personagem = service.buscarPorId(id);
-
-        String tipoNinja;
-        String mensagem;
-
-        if (personagem instanceof NinjaDeTaijutsu ninja) {
-            tipoNinja = "Taijutsu";
-            mensagem = personagem.getNome() + " está usando um golpe de Taijutsu!";
-            ninja.usarJutsu();
-        } else if (personagem instanceof NinjaDeNinjutsu ninja) {
-            tipoNinja = "Ninjutsu";
-            mensagem = personagem.getNome() + " está usando um jutsu de Ninjutsu!";
-            ninja.usarJutsu();
-        } else if (personagem instanceof NinjaDeGenjutsu ninja) {
-            tipoNinja = "Genjutsu";
-            mensagem = personagem.getNome() + " está usando um jutsu de Genjutsu!";
-            ninja.usarJutsu();
-        } else {
-            return ResponseEntity.badRequest().body("Personagem não é um ninja.");
-        }
-
-        return ResponseEntity.ok(
-                java.util.Map.of(
-                        "nome", personagem.getNome(),
-                        "tipoNinja", tipoNinja,
-                        "mensagem", mensagem));
+        return ResponseEntity.ok(service.usarJutsu(id));
     }
 
     @GetMapping("/{id}/desviar")
@@ -200,33 +129,8 @@ public class PersonagemController {
             @ApiResponse(responseCode = "404", description = "Personagem não encontrado"),
             @ApiResponse(responseCode = "500", description = "Erro interno do servidor")
     })
-    public ResponseEntity<?> desviar(
+    public ResponseEntity<Map<String, Object>> desviar(
             @Parameter(description = "ID do personagem", required = true) @PathVariable Long id) {
-        Personagem personagem = service.buscarPorId(id);
-
-        String tipoNinja;
-        String mensagem;
-
-        if (personagem instanceof NinjaDeTaijutsu ninja) {
-            tipoNinja = "Taijutsu";
-            mensagem = personagem.getNome() + " está desviando usando suas habilidades de Taijutsu!";
-            ninja.desviar();
-        } else if (personagem instanceof NinjaDeNinjutsu ninja) {
-            tipoNinja = "Ninjutsu";
-            mensagem = personagem.getNome() + " está desviando usando suas habilidades de Ninjutsu!";
-            ninja.desviar();
-        } else if (personagem instanceof NinjaDeGenjutsu ninja) {
-            tipoNinja = "Genjutsu";
-            mensagem = personagem.getNome() + " está desviando usando suas habilidades de Genjutsu!";
-            ninja.desviar();
-        } else {
-            return ResponseEntity.badRequest().body("Personagem não é um ninja.");
-        }
-
-        return ResponseEntity.ok(
-                java.util.Map.of(
-                        "nome", personagem.getNome(),
-                        "tipoNinja", tipoNinja,
-                        "mensagem", mensagem));
+        return ResponseEntity.ok(service.desviar(id));
     }
 }
