@@ -77,18 +77,6 @@ Especialista em Genjutsu.
 ### Recursos
 A API deverá expor um CRUD completo para personagens (`Personagem`).
 
-### 🌸 Endpoints Padrão
-
-| Método | URL                           | Descrição                     |
-|--------|-------------------------------|--------------------------------|
-| `GET`  | `http://localhost:8080/api/v1/personagens/api/v1/personagens`         | Lista todos os personagens.    |
-| `POST` | `http://localhost:8080/api/v1/personagens/api/v1/personagens`         | Cria um novo personagem.       |
-| `GET`  | `http://localhost:8080/api/v1/personagens/api/v1/personagens/{id}`    | Busca um personagem pelo ID.   |
-| `GET`  | `http://localhost:8080/api/v1/personagens/{id}/usar-jutsu`| Irá realizar jutsu.   |
-| `GET`  | `http://localhost:8080/api/v1/personagens/{id}/desviar`| Irá realizar desviar.   |
-| `PUT`  | `http://localhost:8080/api/v1/personagens/api/v1/personagens/{id}`    | Atualiza dados do personagem.  |
-| `DELETE` | `http://localhost:8080/api/v1/personagens/api/v1/personagens/{id}`  | Remove um personagem.          |
-
 ---
 
 ### 🍙 Padrões e Boas Práticas
@@ -125,27 +113,143 @@ A API deverá expor um CRUD completo para personagens (`Personagem`).
     src/main/resources/db/migration/
     ```
 
+## 🌸 Endpoints da API
+## 1. 🥋 Autenticação de usuários na aplicação
+`POST` `http://localhost:8080/api/v1/auth/login`
+```
+{
+    "username": "admin",
+    "password": "admin123"
+}
+```
+
+## 2. 🐱‍👤 Criar um novo personagem
+`POST` `http://localhost:8080/api/v1/personagens`
+```
+{
+    "tipoNinja": "NINJUTSU",
+    "nome": "Naruto Uzumaki",
+    "idade": 17,
+    "aldeia": "Aldeia da Folha",
+    "chakra": 1000,
+    "jutsus": [
+        "Chidori",
+        "Sharingan"
+    ]
+}
+```
+## 3. 🌀 Listagens
+| Método | URL                           | Descrição                     |
+|--------|-------------------------------|--------------------------------|
+| `GET`  | `http://localhost:8080/api/v1/personagens`         | Lista todos os personagens.    |
+| `GET`  | `http://localhost:8080/api/v1/personagens/{id}`    | Busca um personagem pelo ID.   |
+| `GET`  | `http://localhost:8080/api/v1/personagens/{id}/usar-jutsu` | Irá realizar jutsu.   |
+| `GET`  | `http://localhost:8080/api/v1/personagens/{id}/desviar` | Irá realizar desviar.   |
+
+
+## 4. 💨 Atualiza dados do personagem
+`PUT`  `http://localhost:8080/api/v1/personagens/{id}`
+```
+{
+    "tipoNinja": "NINJUTSU",
+    "nome": "sasuke uchiha",
+    "idade": 16,
+    "aldeia": "Aldeia da Folha",
+    "chakra": 100,
+    "jutsus": [
+        "Chidori",
+        "Sharingan"
+    ]
+}
+```
+
+## 5. 💥  Remove dados do personagem
+`DELETE`  `http://localhost:8080/api/v1/personagens/{id}`
 
 ---
 
+## 🌪 Configuração de Ambientes
 
-## 🏮 Como Executar
+### Autenticação JWT
+
+Antes de acessar os endpoints protegidos:
+
+1. Faça login usando:
+
+```
+{
+    "username": "admin",
+    "password": "admin123"
+}
+```
+
+2. Utilize o token retornado em todas as requisições protegidas no cabeçalho:
+
+```
+Authorization: Bearer {token}
+```
+
+Exemplo Postman:
+
+- Aba Authorization.
+- Auth Type: Bearer Token.
+- Cole o token obtido.
+
+---
+
+### 👁️ Configuração `.env`
+Para facilitar a configuração do banco de dados e evitar informações sensíveis no código, crie um arquivo .env na raiz do projeto com o seguinte conteúdo:
+```bash
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=naruto
+POSTGRES_PORT=5432
+
+SPRING_PROFILES_ACTIVE=postgres
+SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+SPRING_DATASOURCE_USERNAME=postgres
+SPRING_DATASOURCE_PASSWORD=postgres
+
+PGADMIN_DEFAULT_EMAIL=admin@example.com
+PGADMIN_DEFAULT_PASSWORD=admin
+PGADMIN_PORT=5050
+```
+
+Esse arquivo .env é utilizado para centralizar as variáveis de ambiente da aplicação, deixando sua configuração mais simples e segura, especialmente quando for rodar via Docker ou em ambientes diferentes.
+
+🐳 Observação:
+- O Docker Compose utiliza essas variáveis para subir os containers do PostgreSQL e PgAdmin com as credenciais corretas.
+- O Spring Boot também lerá essas variáveis ao inicializar, garantindo que a conexão com o banco seja automática conforme o ambiente.
+
+---
+
+## 🌬️ Como Executar
 
 1. Clone o repositório:
-    ```bash
-    git clone https://github.com/sylviavitoria/DesafioNaruto.git
 
-    
-2. Configure o `application.yml` com seu banco de dados.
-3. Rode a aplicação com:
-    ```bash
-    mvn spring-boot:run
-    ```
+```bash
+git clone https://github.com/sylviavitoria/DesafioNaruto.git
+```
+
+2. Configure o `application.yml` ou `.env` com seu banco de dados.
+
+3. Para executar via Maven:
+
+```bash
+mvn spring-boot:run
+```
+
+Ou via Docker:
+
+```bash
+docker compose up --build
+```
+
 4. Acesse:
-    - Swagger: `http://localhost:8080/swagger-ui.html`
-    - H2 Console: `http://localhost:8080/h2-console` *(caso use H2)*
+
+- Swagger UI: `http://localhost:8080/swagger-ui.html`
+- H2 Console: `http://localhost:8080/h2-console` *(se usar H2)*
 
 ---
-
 
 
