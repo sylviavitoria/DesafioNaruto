@@ -70,7 +70,37 @@ Especialista em Genjutsu.
   - `desviar()`: Mensagem específica para esquiva com Genjutsu.
 
 ---
+## ⚔️ Ações Ninja: Usar Jutsu & Desviar
 
+Durante o desenvolvimento, além de atender ao requisito de criar um método `GET` que retorna uma mensagem personalizada ao chamar `usarJutsu()` ou `desviar()`, também foi implementado o comportamento no console através da execução dos métodos das classes.
+
+### 💥 Usar Jutsu
+Exemplo:
+```
+mensagem = personagem.getNome() + " está usando um golpe de Taijutsu!";
+ninja.usarJutsu();
+```
+- A resposta da API retorna um JSON com as informações.
+- E o console exibe a mensagem do método `usarJutsu()` da classe específica.
+
+---
+
+### 💨 Desviar
+Exemplo:
+```
+mensagem = personagem.getNome() + " está desviando usando suas habilidades de Taijutsu!";
+ninja.desviar();
+```
+- O endpoint retorna o JSON com o nome e a descrição.
+- E no console aparece a mensagem personalizada do método `desviar()`.
+
+---
+
+💡 **Resumo:**
+O método `usarJutsu` foi implementado para buscar um personagem pelo ID e definir a mensagem conforme o tipo de ninja, usando o polimorfismo.  
+A chamada `ninja.usarJutsu();` ou `ninja.desviar();` não apenas executa a lógica no back-end, como também imprime no console.
+
+---
 
 ## 🍡 Parte 2: Desenvolvimento da API
 
