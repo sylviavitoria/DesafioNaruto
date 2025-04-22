@@ -175,7 +175,7 @@ A API deverá expor um CRUD completo para personagens (`Personagem`).
 Antes de acessar os endpoints protegidos:
 
 1. Faça login usando:
-
+`POST` `http://localhost:8080/api/v1/personagens`
 ```
 {
     "username": "admin",
