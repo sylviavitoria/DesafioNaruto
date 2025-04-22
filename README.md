@@ -195,6 +195,8 @@ Exemplo Postman:
 - Auth Type: Bearer Token.
 - Cole o token obtido.
 
+3. Funcionamento:
+Quando o usuário envia essas informações, o sistema verifica se as credenciais estão corretas e, caso estejam, normalmente retorna um token de autenticação que será utilizado para autorizar o acesso aos demais endpoints protegidos da aplicação.
 ---
 
 ### 👁️ Configuração `.env`
