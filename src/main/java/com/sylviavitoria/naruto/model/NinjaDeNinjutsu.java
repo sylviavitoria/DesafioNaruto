@@ -23,4 +23,65 @@ public class NinjaDeNinjutsu extends Personagem implements Ninja {
     public void desviar() {
         System.out.println(getNome() + " está desviando usando suas habilidades de Ninjutsu!");
     }
+
+    @Override
+    public String usarJutsu(String nomeJutsu, Personagem oponente) {
+        if (!podeLutar()) {
+            return getNome() + " não pode mais lutar!";
+        }
+        
+        Jutsu jutsu = getJutsu(nomeJutsu);
+        if (jutsu == null) {
+            return getNome() + " não conhece o jutsu " + nomeJutsu + "!";
+        }
+        
+        if (getChakra() < jutsu.getConsumoDeChakra()) {
+            return getNome() + " não tem chakra suficiente para usar " + nomeJutsu + "!";
+        }
+        
+        int consumoReal = (int)(jutsu.getConsumoDeChakra() * 0.8);
+        diminuirChakra(consumoReal);
+        
+        double modificadorDano = 1.3;
+        int danoReal = jutsu.calcularDanoReal(modificadorDano);
+        
+        int chanceAcerto = gerarNumeroAleatorio(1, 100);
+        
+        StringBuilder resultado = new StringBuilder();
+        resultado.append(getNome()).append(" usa ").append(nomeJutsu).append("! ");
+        
+        if (chanceAcerto <= 70) {
+            oponente.receberDano(danoReal);
+            resultado.append("Acertou e causou ").append(danoReal).append(" de dano! ");
+        } else {
+            resultado.append("O jutsu falhou! ");
+        }
+        
+        resultado.append("[Vida: ").append(getVida()).append(", Chakra: ").append(getChakra()).append("]");
+        return resultado.toString();
+    }
+    
+    @Override
+    public String desviar(String jutsuRecebido, int danoPotencial) {
+        int chanceDesvio = gerarNumeroAleatorio(1, 100);
+        StringBuilder resultado = new StringBuilder();
+        
+        resultado.append(getNome()).append(" tenta desviar de ").append(jutsuRecebido).append("! ");
+        
+        if (chanceDesvio <= 50) {
+            resultado.append("Conseguiu desviar com um jutsu de substituição! ");
+        } else {
+            int danoRecebido = danoPotencial; 
+            receberDano(danoRecebido);
+            resultado.append("Não conseguiu desviar e recebeu ").append(danoRecebido).append(" de dano! ");
+        }
+        
+        resultado.append("[Vida: ").append(getVida()).append(", Chakra: ").append(getChakra()).append("]");
+        return resultado.toString();
+    }
+    
+    @Override
+    public boolean podeLutar() {
+        return getVida() > 0 && getChakra() > 0;
+    }
 }
