@@ -1,6 +1,5 @@
 package com.sylviavitoria.naruto.interfaces;
 
-import com.sylviavitoria.naruto.model.Jutsu;
 import com.sylviavitoria.naruto.model.Personagem;
 
 public interface Ninja {
