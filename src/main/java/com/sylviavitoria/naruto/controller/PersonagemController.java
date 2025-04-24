@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.sylviavitoria.naruto.dto.JutsuDTO;
 import com.sylviavitoria.naruto.dto.PersonagemAtualizarDTO;
 import com.sylviavitoria.naruto.dto.PersonagemDTO;
 import com.sylviavitoria.naruto.model.Personagem;
@@ -132,5 +133,32 @@ public class PersonagemController {
     public ResponseEntity<Map<String, Object>> desviar(
             @Parameter(description = "ID do personagem", required = true) @PathVariable Long id) {
         return ResponseEntity.ok(service.desviar(id));
+    }
+
+    @PostMapping("/{id}/jutsus")
+    @Operation(summary = "Adiciona um novo jutsu ao personagem", 
+              description = "Adiciona um novo jutsu com nome, dano e consumo de chakra")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Jutsu adicionado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Personagem não encontrado"),
+            @ApiResponse(responseCode = "500", description = "Erro interno do servidor")
+    })
+    public ResponseEntity<Personagem> adicionarJutsu(
+            @Parameter(description = "ID do personagem", required = true) @PathVariable Long id,
+            @Parameter(description = "Dados do jutsu", required = true) @RequestBody JutsuDTO jutsuDTO) {
+        return ResponseEntity.ok(service.adicionarJutsu(id, jutsuDTO));
+    }
+
+    @GetMapping("/{id}/jutsus")
+    @Operation(summary = "Lista todos os jutsus de um personagem", 
+              description = "Retorna a lista de jutsus com detalhes de dano e consumo")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operação bem-sucedida"),
+            @ApiResponse(responseCode = "404", description = "Personagem não encontrado"),
+            @ApiResponse(responseCode = "500", description = "Erro interno do servidor")
+    })
+    public ResponseEntity<Map<String, Object>> listarJutsus(
+            @Parameter(description = "ID do personagem", required = true) @PathVariable Long id) {
+        return ResponseEntity.ok(service.listarJutsus(id));
     }
 }

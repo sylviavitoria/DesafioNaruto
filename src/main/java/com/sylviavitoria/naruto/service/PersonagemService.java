@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.sylviavitoria.naruto.dto.JutsuDTO;
 import com.sylviavitoria.naruto.dto.PersonagemAtualizarDTO;
 import com.sylviavitoria.naruto.dto.PersonagemDTO;
 import com.sylviavitoria.naruto.model.NinjaDeGenjutsu;
@@ -15,6 +16,7 @@ import com.sylviavitoria.naruto.model.NinjaDeTaijutsu;
 import com.sylviavitoria.naruto.model.Personagem;
 import com.sylviavitoria.naruto.repository.PersonagemRepository;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -76,8 +78,8 @@ public class PersonagemService {
     
     public Personagem criarPersonagem(PersonagemDTO dto) {
         log.info("Criando personagem do tipo: {}", dto.getTipoNinja());
-        
         Personagem personagem;
+        
         switch (dto.getTipoNinja().toUpperCase()) {
             case "TAIJUTSU":
                 personagem = new NinjaDeTaijutsu();
@@ -92,14 +94,23 @@ public class PersonagemService {
                 log.warn("Tentativa de criar personagem com tipo ninja inválido: {}", dto.getTipoNinja());
                 throw new IllegalArgumentException("Tipo de ninja inválido");
         }
-
+        
         personagem.setNome(dto.getNome());
         personagem.setIdade(dto.getIdade());
         personagem.setAldeia(dto.getAldeia());
         personagem.setChakra(dto.getChakra());
-        personagem.setJutsus(dto.getJutsus());
         
-        return salvar(personagem);
+        if (dto.getJutsus() != null) {
+            dto.getJutsus().forEach((nomeJutsu, jutsuDTO) -> {
+                personagem.adicionarJutsu(
+                    nomeJutsu,
+                    jutsuDTO.getDano(),
+                    jutsuDTO.getConsumoDeChakra()
+                );
+            });
+        }
+        
+        return repository.save(personagem);
     }
     
     public Personagem atualizarPersonagem(Long id, PersonagemAtualizarDTO dto) {
@@ -124,7 +135,10 @@ public class PersonagemService {
         }
 
         if (dto.getJutsus() != null) {
-            personagem.setJutsus(dto.getJutsus());
+            personagem.getJutsusMap().clear();
+            for (String jutsu : dto.getJutsus()) {
+                personagem.adicionarJutsu(jutsu, 50, 20);
+            }
         }
         
         return salvar(personagem);
@@ -194,5 +208,46 @@ public class PersonagemService {
                 "nome", personagem.getNome(),
                 "tipoNinja", tipoNinja,
                 "mensagem", mensagem);
+    }
+
+
+    public Personagem adicionarJutsu(Long personagemId, JutsuDTO jutsuDTO) {
+        log.info("Adicionando jutsu '{}' ao personagem id={}", jutsuDTO.getNome(), personagemId);
+        
+        Personagem personagem = buscarPorId(personagemId);
+        
+        if (jutsuDTO.getDano() <= 0) {
+            throw new IllegalArgumentException("Dano do jutsu deve ser maior que zero");
+        }
+        
+        if (jutsuDTO.getConsumoDeChakra() <= 0) {
+            throw new IllegalArgumentException("Consumo de chakra deve ser maior que zero");
+        }
+        
+        personagem.adicionarJutsu(jutsuDTO.getNome(), jutsuDTO.getDano(), jutsuDTO.getConsumoDeChakra());
+        
+        return salvar(personagem);
+    }
+    
+    public Map<String, Object> listarJutsus(Long personagemId) {
+        log.info("Listando jutsus do personagem id={}", personagemId);
+        
+        Personagem personagem = buscarPorId(personagemId);
+        Map<String, Object> resultado = new HashMap<>();
+        
+        resultado.put("personagemId", personagem.getId());
+        resultado.put("nome", personagem.getNome());
+        
+        Map<String, Map<String, Object>> jutsuDetalhes = new HashMap<>();
+        
+        personagem.getJutsusMap().forEach((nome, jutsu) -> {
+            Map<String, Object> detalhes = new HashMap<>();
+            detalhes.put("dano", jutsu.getDano());
+            detalhes.put("consumoDeChakra", jutsu.getConsumoDeChakra());
+            jutsuDetalhes.put(nome, detalhes);
+        });
+        
+        resultado.put("jutsus", jutsuDetalhes);
+        return resultado;
     }
 }
