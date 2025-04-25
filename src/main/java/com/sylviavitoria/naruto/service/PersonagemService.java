@@ -78,6 +78,11 @@ public class PersonagemService {
     
     public Personagem criarPersonagem(PersonagemDTO dto) {
         log.info("Criando personagem do tipo: {}", dto.getTipoNinja());
+
+        if (dto.getTipoNinja() == null || dto.getTipoNinja().isBlank()) {
+            log.warn("Tentativa de criar personagem com tipo ninja nulo ou vazio");
+            throw new IllegalArgumentException("Tipo de ninja inválido");
+        }
         Personagem personagem;
         
         switch (dto.getTipoNinja().toUpperCase()) {
@@ -144,73 +149,6 @@ public class PersonagemService {
         return salvar(personagem);
     }
     
-    public Map<String, Object> usarJutsu(Long id) {
-        log.info("Personagem id={} usando jutsu", id);
-        
-        Personagem personagem = buscarPorId(id);
-        String tipoNinja;
-        String mensagem;
-
-        if (personagem instanceof NinjaDeTaijutsu ninja) {
-            tipoNinja = "Taijutsu";
-            mensagem = personagem.getNome() + " está usando um golpe de Taijutsu!";
-            ninja.usarJutsu();
-            log.info("Personagem {} usando jutsu de Taijutsu", personagem.getNome());
-        } else if (personagem instanceof NinjaDeNinjutsu ninja) {
-            tipoNinja = "Ninjutsu";
-            mensagem = personagem.getNome() + " está usando um jutsu de Ninjutsu!";
-            ninja.usarJutsu();
-            log.info("Personagem {} usando jutsu de Ninjutsu", personagem.getNome());
-        } else if (personagem instanceof NinjaDeGenjutsu ninja) {
-            tipoNinja = "Genjutsu";
-            mensagem = personagem.getNome() + " está usando um jutsu de Genjutsu!";
-            ninja.usarJutsu();
-            log.info("Personagem {} usando jutsu de Genjutsu", personagem.getNome());
-        } else {
-            log.warn("Personagem {} não é um ninja reconhecido", personagem.getNome());
-            throw new IllegalArgumentException("Personagem não é um ninja.");
-        }
-
-        return Map.of(
-                "nome", personagem.getNome(),
-                "tipoNinja", tipoNinja,
-                "mensagem", mensagem);
-    }
-    
-    public Map<String, Object> desviar(Long id) {
-        log.info("Personagem id={} desviando", id);
-        
-        Personagem personagem = buscarPorId(id);
-        String tipoNinja;
-        String mensagem;
-
-        if (personagem instanceof NinjaDeTaijutsu ninja) {
-            tipoNinja = "Taijutsu";
-            mensagem = personagem.getNome() + " está desviando usando suas habilidades de Taijutsu!";
-            ninja.desviar();
-            log.info("Personagem {} desviando com Taijutsu", personagem.getNome());
-        } else if (personagem instanceof NinjaDeNinjutsu ninja) {
-            tipoNinja = "Ninjutsu";
-            mensagem = personagem.getNome() + " está desviando usando suas habilidades de Ninjutsu!";
-            ninja.desviar();
-            log.info("Personagem {} desviando com Ninjutsu", personagem.getNome());
-        } else if (personagem instanceof NinjaDeGenjutsu ninja) {
-            tipoNinja = "Genjutsu";
-            mensagem = personagem.getNome() + " está desviando usando suas habilidades de Genjutsu!";
-            ninja.desviar();
-            log.info("Personagem {} desviando com Genjutsu", personagem.getNome());
-        } else {
-            log.warn("Personagem {} não é um ninja reconhecido", personagem.getNome());
-            throw new IllegalArgumentException("Personagem não é um ninja.");
-        }
-
-        return Map.of(
-                "nome", personagem.getNome(),
-                "tipoNinja", tipoNinja,
-                "mensagem", mensagem);
-    }
-
-
     public Personagem adicionarJutsu(Long personagemId, JutsuDTO jutsuDTO) {
         log.info("Adicionando jutsu '{}' ao personagem id={}", jutsuDTO.getNome(), personagemId);
         

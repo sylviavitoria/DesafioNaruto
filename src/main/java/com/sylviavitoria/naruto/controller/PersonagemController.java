@@ -109,32 +109,6 @@ public class PersonagemController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{id}/usar-jutsu")
-    @Operation(summary = "Personagem usa jutsu", description = "Faz um personagem usar seu jutsu conforme seu tipo de ninja")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Jutsu executado com sucesso", content = @Content(schema = @Schema(implementation = Map.class))),
-            @ApiResponse(responseCode = "400", description = "Personagem não é um ninja"),
-            @ApiResponse(responseCode = "404", description = "Personagem não encontrado"),
-            @ApiResponse(responseCode = "500", description = "Erro interno do servidor")
-    })
-    public ResponseEntity<Map<String, Object>> usarJutsu(
-            @Parameter(description = "ID do personagem", required = true) @PathVariable Long id) {
-        return ResponseEntity.ok(service.usarJutsu(id));
-    }
-
-    @GetMapping("/{id}/desviar")
-    @Operation(summary = "Personagem desvia", description = "Faz um personagem desviar conforme seu tipo de ninja")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Desvio executado com sucesso", content = @Content(schema = @Schema(implementation = Map.class))),
-            @ApiResponse(responseCode = "400", description = "Personagem não é um ninja"),
-            @ApiResponse(responseCode = "404", description = "Personagem não encontrado"),
-            @ApiResponse(responseCode = "500", description = "Erro interno do servidor")
-    })
-    public ResponseEntity<Map<String, Object>> desviar(
-            @Parameter(description = "ID do personagem", required = true) @PathVariable Long id) {
-        return ResponseEntity.ok(service.desviar(id));
-    }
-
     @PostMapping("/{id}/jutsus")
     @Operation(summary = "Adiciona um novo jutsu ao personagem", 
               description = "Adiciona um novo jutsu com nome, dano e consumo de chakra")
