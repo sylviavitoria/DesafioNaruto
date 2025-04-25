@@ -59,13 +59,10 @@ public class NinjaDeGenjutsu extends Personagem implements Ninja {
 
         resultado.append(getNome()).append(" tenta desviar de ").append(jutsuRecebido).append("! ");
 
-        if (chanceDesvio <= 40) {
-            resultado.append("Conseguiu desviar com suas habilidades de Genjutsu! ");
+        if (chanceDesvio <= 50) { 
+            resultado.append("Conseguiu desviar! ");
         } else {
-            int danoRecebido = danoPotencial;
-            receberDano(danoRecebido);
-            resultado.append("Não conseguiu desviar completamente e recebeu ").append(danoRecebido)
-                    .append(" de dano! ");
+            resultado.append("Não conseguiu desviar! ");
         }
 
         resultado.append("[Vida: ").append(getVida()).append(", Chakra: ").append(getChakra()).append("]");
