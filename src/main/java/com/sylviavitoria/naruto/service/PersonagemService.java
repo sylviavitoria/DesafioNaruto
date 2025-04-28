@@ -4,12 +4,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import org.springframework.data.domain.Sort;
 import com.sylviavitoria.naruto.dto.JutsuDTO;
 import com.sylviavitoria.naruto.dto.PersonagemAtualizarDTO;
 import com.sylviavitoria.naruto.dto.PersonagemDTO;
+import com.sylviavitoria.naruto.dto.PersonagemResponseDTO;
+import com.sylviavitoria.naruto.exception.NotFoundException;
+import com.sylviavitoria.naruto.model.Jutsu;
 import com.sylviavitoria.naruto.model.NinjaDeGenjutsu;
 import com.sylviavitoria.naruto.model.NinjaDeNinjutsu;
 import com.sylviavitoria.naruto.model.NinjaDeTaijutsu;
@@ -25,6 +30,75 @@ import java.util.Map;
 public class PersonagemService {
     
     private final PersonagemRepository repository;
+
+        public Page<PersonagemResponseDTO> listarTodosDTO(int page, int size, String sort) {
+        Pageable pageable = criarPageable(page, size, sort);
+        return repository.findAll(pageable).map(this::converterParaDTO);
+    }
+    
+    private Pageable criarPageable(int page, int size, String sort) {
+        if (sort != null && !sort.isEmpty()) {
+            try {
+                return PageRequest.of(page, size, Sort.by(sort));
+            } catch (Exception e) {
+                return PageRequest.of(page, size);
+            }
+        }
+        return PageRequest.of(page, size);
+    }
+
+    private PersonagemResponseDTO converterParaDTO(Personagem personagem) {
+        return PersonagemResponseDTO.builder()
+            .id(personagem.getId())
+            .nome(personagem.getNome())
+            .idade(personagem.getIdade())
+            .aldeia(personagem.getAldeia())
+            .chakra(personagem.getChakra())
+            .vida(personagem.getVida())
+            .tipoNinja(determinarTipoNinja(personagem))
+            .jutsus(personagem.getJutsus())
+            .jutsusDetalhes(converterJutsusParaDTO(personagem.getJutsusMap()))
+            .build();
+    }
+
+    private String determinarTipoNinja(Personagem personagem) {
+        if (personagem instanceof NinjaDeTaijutsu) return "TAIJUTSU";
+        if (personagem instanceof NinjaDeNinjutsu) return "NINJUTSU";
+        if (personagem instanceof NinjaDeGenjutsu) return "GENJUTSU";
+        return "DESCONHECIDO";
+    }
+
+    private Map<String, Map<String, Object>> converterJutsusParaDTO(Map<String, Jutsu> jutsusMap) {
+        Map<String, Map<String, Object>> jutsuDetalhes = new HashMap<>();
+        jutsusMap.forEach((nome, jutsu) -> {
+            Map<String, Object> detalhes = new HashMap<>();
+            detalhes.put("dano", jutsu.getDano());
+            detalhes.put("consumoDeChakra", jutsu.getConsumoDeChakra());
+            jutsuDetalhes.put(nome, detalhes);
+        });
+        return jutsuDetalhes;
+    }
+
+    public PersonagemResponseDTO buscarPorIdDTO(Long id) {
+        return converterParaDTO(buscarPorId(id));
+    }
+
+    public Personagem buscarPorId(Long id) {
+        return repository.findById(id)
+            .orElseThrow(() -> NotFoundException.personagemNaoEncontrado(id));
+    }
+
+    public PersonagemResponseDTO criarPersonagemDTO(PersonagemDTO dto) {
+        return converterParaDTO(criarPersonagem(dto));
+    }
+
+    public PersonagemResponseDTO atualizarPersonagemDTO(Long id, PersonagemAtualizarDTO dto) {
+        return converterParaDTO(atualizarPersonagem(id, dto));
+    }
+
+    public PersonagemResponseDTO adicionarJutsuDTO(Long id, JutsuDTO jutsuDTO) {
+        return converterParaDTO(adicionarJutsu(id, jutsuDTO));
+    }
     
     public Page<Personagem> listarTodos(Pageable pageable) {
         log.info("Listando todos os personagens com paginacao: page={}, size={}", 
@@ -32,22 +106,9 @@ public class PersonagemService {
         return repository.findAll(pageable);
     }
     
-    public Personagem buscarPorId(Long id) {
-        log.info("Buscando personagem com id: {}", id);
-        return repository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Personagem nao encontrado"));
-    }
-    
+
     public Personagem salvar(Personagem personagem) {
         log.info("Salvando personagem: {}", personagem.getNome());
-        if (personagem.getChakra() < 0) {
-            log.warn("Tentativa de salvar personagem com chakra negativo: {}", personagem.getChakra());
-            throw new IllegalArgumentException("Chakra nao pode ser negativo");
-        }
-        if (personagem.getNome() == null || personagem.getNome().isBlank()) {
-            log.warn("Tentativa de salvar personagem sem nome");
-            throw new IllegalArgumentException("Nome é obrigatorio");
-        }
         Personagem salvo = repository.save(personagem);
         log.info("Personagem salvo com sucesso: id={}", salvo.getId());
         return salvo;
@@ -75,30 +136,13 @@ public class PersonagemService {
         log.info("Personagem atualizado com sucesso: id={}", id);
         return atualizado;
     }
-    
+
     public Personagem criarPersonagem(PersonagemDTO dto) {
         log.info("Criando personagem do tipo: {}", dto.getTipoNinja());
-
-        if (dto.getTipoNinja() == null || dto.getTipoNinja().isBlank()) {
-            log.warn("Tentativa de criar personagem com tipo ninja nulo ou vazio");
-            throw new IllegalArgumentException("Tipo de ninja inválido");
-        }
-        Personagem personagem;
         
-        switch (dto.getTipoNinja().toUpperCase()) {
-            case "TAIJUTSU":
-                personagem = new NinjaDeTaijutsu();
-                break;
-            case "NINJUTSU":
-                personagem = new NinjaDeNinjutsu();
-                break;
-            case "GENJUTSU":
-                personagem = new NinjaDeGenjutsu();
-                break;
-            default:
-                log.warn("Tentativa de criar personagem com tipo ninja inválido: {}", dto.getTipoNinja());
-                throw new IllegalArgumentException("Tipo de ninja inválido");
-        }
+        validarTipoNinja(dto.getTipoNinja());
+        
+        Personagem personagem = criarPersonagemPorTipo(dto.getTipoNinja());
         
         personagem.setNome(dto.getNome());
         personagem.setIdade(dto.getIdade());
@@ -116,6 +160,24 @@ public class PersonagemService {
         }
         
         return repository.save(personagem);
+    }
+        private void validarTipoNinja(String tipoNinja) {
+        if (tipoNinja == null || tipoNinja.isBlank()) {
+            log.warn("Tentativa de criar personagem com tipo ninja nulo ou vazio");
+            throw new IllegalArgumentException("Tipo de ninja inválido");
+        }
+    }
+    
+    private Personagem criarPersonagemPorTipo(String tipoNinja) {
+        return switch (tipoNinja.toUpperCase()) {
+            case "TAIJUTSU" -> new NinjaDeTaijutsu();
+            case "NINJUTSU" -> new NinjaDeNinjutsu();
+            case "GENJUTSU" -> new NinjaDeGenjutsu();
+            default -> {
+                log.warn("Tentativa de criar personagem com tipo ninja inválido: {}", tipoNinja);
+                throw new IllegalArgumentException("Tipo de ninja inválido");
+            }
+        };
     }
     
     public Personagem atualizarPersonagem(Long id, PersonagemAtualizarDTO dto) {
