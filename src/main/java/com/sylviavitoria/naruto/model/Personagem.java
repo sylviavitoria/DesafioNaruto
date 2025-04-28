@@ -1,6 +1,7 @@
 package com.sylviavitoria.naruto.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,6 +15,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "tipo_ninja")
@@ -37,9 +39,50 @@ public abstract class Personagem {
     private int vida = 100;
 
     public Personagem(String nome, int idade, String aldeia, int chakra) {
+        validarNome(nome);
+        validarIdade(idade);
+        validarAldeia(aldeia);
+        validarChakra(chakra);
+        
         this.nome = nome;
         this.idade = idade;
         this.aldeia = aldeia;
+        this.chakra = chakra;
+        this.vida = 100;
+        this.jutsusMap = new HashMap<>();
+    }
+
+    private void validarNome(String nome) {
+        if (nome == null || nome.trim().isEmpty()) {
+            throw new IllegalArgumentException("Nome não pode ser vazio ou nulo");
+        }
+    }
+
+    private void validarIdade(int idade) {
+        if (idade < 0) {
+            throw new IllegalArgumentException("Idade não pode ser negativa");
+        }
+    }
+
+    private void validarAldeia(String aldeia) {
+        if (aldeia == null || aldeia.trim().isEmpty()) {
+            throw new IllegalArgumentException("Aldeia não pode ser vazia ou nula");
+        }
+    }
+
+    private void validarChakra(int chakra) {
+        if (chakra < 0) {
+            throw new IllegalArgumentException("Chakra não pode ser negativo");
+        }
+    }
+
+    public void setNome(String nome) {
+        validarNome(nome);
+        this.nome = nome;
+    }
+
+    public void setChakra(int chakra) {
+        validarChakra(chakra);
         this.chakra = chakra;
     }
 
@@ -96,5 +139,12 @@ public abstract class Personagem {
         }
         
         return info.toString();
+    }
+
+    public void setVida(int vida) {
+        if (vida < 0) {
+            throw new IllegalArgumentException("Vida não pode ser negativa");
+        }
+        this.vida = vida;
     }
 }
