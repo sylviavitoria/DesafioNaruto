@@ -356,7 +356,7 @@ public class PersonagemServiceTest {
 
         assertEquals("Dano do jutsu deve ser maior que zero", exception.getMessage());
         verify(repository).findById(idPersonagem);
-        verifyNoInteractions(repository);
+        verifyNoMoreInteractions(repository);
     }
 
     @Test
