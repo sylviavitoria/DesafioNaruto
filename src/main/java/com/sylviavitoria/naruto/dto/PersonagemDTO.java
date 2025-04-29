@@ -2,7 +2,9 @@ package com.sylviavitoria.naruto.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import java.util.List;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Data
 @Schema(description = "Dados para criação de um personagem")
@@ -22,6 +24,21 @@ public class PersonagemDTO {
     @Schema(description = "Quantidade de chakra do personagem", example = "100", required = true)
     private int chakra;
     
-    @Schema(description = "Lista de jutsus do personagem", example = "[\"Rasengan\", \"Kage Bunshin no Jutsu\"]")
-    private List<String> jutsus;
+        @Schema(
+        description = "Map de jutsus com seus atributos",
+        example = """
+            {
+                "Rasengan": {
+                    "dano": 70,
+                    "consumoDeChakra": 10
+                },
+                "Kage Bunshin": {
+                    "dano": 40,
+                    "consumoDeChakra": 10
+                }
+            }
+            """
+    )
+    private Map<String, JutsuDTO> jutsus = new HashMap<>();
+
 }
