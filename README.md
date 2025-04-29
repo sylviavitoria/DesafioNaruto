@@ -250,11 +250,11 @@ A API deverá expor um CRUD completo para personagens (`Personagem`).
     "jutsus": {
         "Rasengan": {
             "dano": 70,
-            "consumoDeChakra": 30
+            "consumoDeChakra": 10
         },
         "Kage Bunshin": {
             "dano": 40,
-            "consumoDeChakra": 20
+            "consumoDeChakra": 10
         }
     }
 }
@@ -287,7 +287,7 @@ A API deverá expor um CRUD completo para personagens (`Personagem`).
 {
     "nome": "Sabio",
     "dano": 70,
-    "consumoDeChakra": 30
+    "consumoDeChakra": 10
 }
 ```
 
