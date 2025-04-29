@@ -402,7 +402,7 @@ docker compose up --build
   ![Interface do Swagger](https://github.com/user-attachments/assets/89f89dca-a858-45ba-81f7-f55b68de2a3e)
 
 ### Teste dos Endpoints
-- **Postman:**:  Adicione os Endpoints da API mencionados anteriormente `http://localhost:8080/api/v1/...`
+- **Postman:**  Adicione os Endpoints da API mencionados anteriormente `http://localhost:8080/api/v1/...`
 
 ### Gerenciamento do Banco de Dados
 - **H2 Database** (para ambiente de desenvolvimento):
