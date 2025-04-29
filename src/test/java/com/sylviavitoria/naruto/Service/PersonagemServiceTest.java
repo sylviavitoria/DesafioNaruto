@@ -1,11 +1,18 @@
 package com.sylviavitoria.naruto.Service;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,6 +29,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import com.sylviavitoria.naruto.dto.JutsuDTO;
+import com.sylviavitoria.naruto.dto.PersonagemAtualizarDTO;
 import com.sylviavitoria.naruto.dto.PersonagemDTO;
 import com.sylviavitoria.naruto.model.NinjaDeGenjutsu;
 import com.sylviavitoria.naruto.model.NinjaDeNinjutsu;
@@ -53,7 +62,8 @@ public class PersonagemServiceTest {
         personagemTaijutsu.setIdade(16);
         personagemTaijutsu.setAldeia("Aldeia da Folha");
         personagemTaijutsu.setChakra(100);
-        personagemTaijutsu.setJutsus(Arrays.asList("Dynamic Entry", "Leaf Hurricane"));
+        personagemTaijutsu.adicionarJutsu("Dynamic Entry", 50, 20);
+        personagemTaijutsu.adicionarJutsu("Leaf Hurricane", 60, 25);
 
         personagemNinjutsu = new NinjaDeNinjutsu();
         personagemNinjutsu.setId(2L);
@@ -61,7 +71,8 @@ public class PersonagemServiceTest {
         personagemNinjutsu.setIdade(17);
         personagemNinjutsu.setAldeia("Aldeia da Folha");
         personagemNinjutsu.setChakra(500);
-        personagemNinjutsu.setJutsus(Arrays.asList("Rasengan", "Kage Bunshin no Jutsu"));
+        personagemNinjutsu.adicionarJutsu("Rasengan", 70, 30);
+        personagemNinjutsu.adicionarJutsu("Kage Bunshin no Jutsu", 40, 20);
 
         personagemGenjutsu = new NinjaDeGenjutsu();
         personagemGenjutsu.setId(3L);
@@ -69,11 +80,11 @@ public class PersonagemServiceTest {
         personagemGenjutsu.setIdade(21);
         personagemGenjutsu.setAldeia("Aldeia da Folha");
         personagemGenjutsu.setChakra(300);
-        personagemGenjutsu.setJutsus(Arrays.asList("Tsukuyomi", "Amaterasu"));
+        personagemGenjutsu.adicionarJutsu("Tsukuyomi", 80, 40);
+        personagemGenjutsu.adicionarJutsu("Amaterasu", 90, 45);
 
         List<Personagem> personagens = Arrays.asList(personagemTaijutsu, personagemNinjutsu, personagemGenjutsu);
         pagePersonagens = new PageImpl<>(personagens);
-        
         pageable = PageRequest.of(0, 10);
     }
 
@@ -113,8 +124,8 @@ public class PersonagemServiceTest {
         Exception exception = assertThrows(RuntimeException.class, () -> {
             service.buscarPorId(idDePersonagemInexistente);
         });
-        
-        assertEquals("Personagem nao encontrado", exception.getMessage());
+
+        assertEquals("Personagem não encontrado com ID: 99", exception.getMessage());
         verify(repository).findById(idDePersonagemInexistente);
     }
 
@@ -134,41 +145,51 @@ public class PersonagemServiceTest {
     @Test
     @DisplayName("Deve lançar exceção ao tentar salvar personagem com chakra negativo")
     void deveLancarExcecaoAoTentarSalvarPersonagemComChakraNegativo() {
-        int chakraNegativo = -10;
-        personagemTaijutsu.setChakra(chakraNegativo);
+
+        NinjaDeTaijutsu personagem = new NinjaDeTaijutsu();
+        personagem.setNome("Rock Lee");
+        personagem.setIdade(16);
+        personagem.setAldeia("Aldeia da Folha");
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            service.salvar(personagemTaijutsu);
+            personagem.setChakra(-10);
         });
-        
-        assertEquals("Chakra nao pode ser negativo", exception.getMessage());
-        verify(repository, never()).save(any(Personagem.class));
+
+        assertEquals("Chakra não pode ser negativo", exception.getMessage());
+        verifyNoInteractions(repository);
     }
 
     @Test
     @DisplayName("Deve lançar exceção ao tentar salvar personagem sem nome")
     void deveLancarExcecaoAoTentarSalvarPersonagemSemNome() {
-        personagemTaijutsu.setNome("");
+        NinjaDeTaijutsu personagem = new NinjaDeTaijutsu();
+        personagem.setIdade(16);
+        personagem.setAldeia("Aldeia da Folha");
+        personagem.setChakra(100);
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            service.salvar(personagemTaijutsu);
+            personagem.setNome("");
         });
-        
-        assertEquals("Nome é obrigatorio", exception.getMessage());
-        verify(repository, never()).save(any(Personagem.class));
+
+        assertEquals("Nome não pode ser vazio ou nulo", exception.getMessage());
+        verifyNoInteractions(repository);
     }
 
     @Test
     @DisplayName("Deve lançar exceção ao tentar salvar personagem com nome nulo")
     void deveLancarExcecaoAoTentarSalvarPersonagemComNomeNulo() {
-        personagemTaijutsu.setNome(null);
+
+        NinjaDeTaijutsu personagem = new NinjaDeTaijutsu();
+        personagem.setIdade(16);
+        personagem.setAldeia("Aldeia da Folha");
+        personagem.setChakra(100);
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            service.salvar(personagemTaijutsu);
+            personagem.setNome(null);
         });
-        
-        assertEquals("Nome é obrigatorio", exception.getMessage());
-        verify(repository, never()).save(any(Personagem.class));
+
+        assertEquals("Nome não pode ser vazio ou nulo", exception.getMessage());
+        verifyNoInteractions(repository);
     }
 
     @Test
@@ -193,12 +214,12 @@ public class PersonagemServiceTest {
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             service.deletar(idDeletarInexistente);
         });
-        
+
         assertEquals("Personagem com ID 99 nao existe", exception.getMessage());
         verify(repository).existsById(idDeletarInexistente);
-        verify(repository, never()).deleteById(anyLong());
+        verifyNoMoreInteractions(repository);
     }
-    
+
     @Test
     @DisplayName("Deve atualizar personagem existente com sucesso")
     void deveAtualizarPersonagemExistenteComSucesso() {
@@ -206,9 +227,9 @@ public class PersonagemServiceTest {
         int idadePersonagem = 17;
         personagemTaijutsu.setNome("Rock Lee");
         personagemTaijutsu.setIdade(idadePersonagem);
-        
+
         when(repository.findById(idPersonagem)).thenReturn(Optional.of(personagemTaijutsu));
-        when(repository.save(any(Personagem.class))).thenReturn(personagemTaijutsu);
+        when(repository.save(personagemTaijutsu)).thenReturn(personagemTaijutsu);
 
         Personagem atualizado = service.atualizar(idPersonagem, personagemTaijutsu);
 
@@ -218,79 +239,64 @@ public class PersonagemServiceTest {
         verify(repository).findById(idPersonagem);
         verify(repository).save(personagemTaijutsu);
     }
-    
-    @Test
-    @DisplayName("Deve lançar exceção ao tentar atualizar personagem com chakra negativo")
-    void deveLancarExcecaoAoTentarAtualizarPersonagemComChakraNegativo() {
-        Long idPersonagem = 1L;
-        int chakraNegativo = -50;
-        personagemTaijutsu.setChakra(chakraNegativo);
-        
-        when(repository.findById(idPersonagem)).thenReturn(Optional.of(new NinjaDeTaijutsu()));
-        
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            service.atualizar(idPersonagem, personagemTaijutsu);
-        });
-        
-        assertEquals("Chakra nao pode ser negativo", exception.getMessage());
-        verify(repository).findById(idPersonagem);
-        verify(repository, never()).save(any(Personagem.class));
-    }
 
     @Test
     @DisplayName("Deve criar personagem do tipo Taijutsu")
     void deveCriarPersonagemDoTipoTaijutsu() {
+
         PersonagemDTO dto = new PersonagemDTO();
         dto.setTipoNinja("TAIJUTSU");
         dto.setNome("Rock Lee");
         dto.setIdade(16);
         dto.setAldeia("Aldeia da Folha");
         dto.setChakra(100);
-        dto.setJutsus(Arrays.asList("Dynamic Entry", "Leaf Hurricane"));
 
-        NinjaDeTaijutsu novoPersonagem = new NinjaDeTaijutsu();
-        novoPersonagem.setId(1L);
-        novoPersonagem.setNome(dto.getNome());
-        novoPersonagem.setIdade(dto.getIdade());
-        novoPersonagem.setAldeia(dto.getAldeia());
-        novoPersonagem.setChakra(dto.getChakra());
-        novoPersonagem.setJutsus(dto.getJutsus());
+        NinjaDeTaijutsu personagemEsperado = new NinjaDeTaijutsu();
+        personagemEsperado.setNome(dto.getNome());
+        personagemEsperado.setIdade(dto.getIdade());
+        personagemEsperado.setAldeia(dto.getAldeia());
+        personagemEsperado.setChakra(dto.getChakra());
 
-        when(repository.save(any(NinjaDeTaijutsu.class))).thenReturn(novoPersonagem);
+        when(repository.save(personagemEsperado)).thenReturn(personagemEsperado);
 
         Personagem resultado = service.criarPersonagem(dto);
 
         assertNotNull(resultado);
-        assertTrue(resultado instanceof NinjaDeTaijutsu);
         assertEquals(dto.getNome(), resultado.getNome());
         assertEquals(dto.getIdade(), resultado.getIdade());
         assertEquals(dto.getAldeia(), resultado.getAldeia());
         assertEquals(dto.getChakra(), resultado.getChakra());
-        assertEquals(dto.getJutsus(), resultado.getJutsus());
-        verify(repository).save(any(NinjaDeTaijutsu.class));
+
+        verify(repository).save(personagemEsperado);
     }
-    
+
     @Test
     @DisplayName("Deve criar personagem do tipo Ninjutsu")
     void deveCriarPersonagemDoTipoNinjutsu() {
-
         PersonagemDTO dto = new PersonagemDTO();
         dto.setTipoNinja("NINJUTSU");
         dto.setNome("Naruto Uzumaki");
         dto.setIdade(17);
         dto.setAldeia("Aldeia da Folha");
         dto.setChakra(500);
-        dto.setJutsus(Arrays.asList("Rasengan", "Kage Bunshin no Jutsu"));
 
-        NinjaDeNinjutsu novoPersonagem = new NinjaDeNinjutsu();
-        novoPersonagem.setId(2L);
-        novoPersonagem.setNome(dto.getNome());
-        novoPersonagem.setIdade(dto.getIdade());
-        novoPersonagem.setAldeia(dto.getAldeia());
-        novoPersonagem.setChakra(dto.getChakra());
-        novoPersonagem.setJutsus(dto.getJutsus());
+        Map<String, JutsuDTO> jutsusMap = new HashMap<>();
+        JutsuDTO rasengan = new JutsuDTO();
+        rasengan.setNome("Rasengan");
+        rasengan.setDano(70);
+        rasengan.setConsumoDeChakra(30);
+        jutsusMap.put("Rasengan", rasengan);
 
-        when(repository.save(any(NinjaDeNinjutsu.class))).thenReturn(novoPersonagem);
+        dto.setJutsus(jutsusMap);
+
+        NinjaDeNinjutsu personagemEsperado = new NinjaDeNinjutsu();
+        personagemEsperado.setNome(dto.getNome());
+        personagemEsperado.setIdade(dto.getIdade());
+        personagemEsperado.setAldeia(dto.getAldeia());
+        personagemEsperado.setChakra(dto.getChakra());
+        personagemEsperado.adicionarJutsu("Rasengan", 70, 30);
+
+        when(repository.save(personagemEsperado)).thenReturn(personagemEsperado);
 
         Personagem resultado = service.criarPersonagem(dto);
 
@@ -300,185 +306,249 @@ public class PersonagemServiceTest {
         assertEquals(dto.getIdade(), resultado.getIdade());
         assertEquals(dto.getAldeia(), resultado.getAldeia());
         assertEquals(dto.getChakra(), resultado.getChakra());
-        assertEquals(dto.getJutsus(), resultado.getJutsus());
-        verify(repository).save(any(NinjaDeNinjutsu.class));
+        assertEquals(dto.getJutsus().keySet(), resultado.getJutsusMap().keySet());
+        verify(repository).save(personagemEsperado);
     }
-    
+
     @Test
-    @DisplayName("Deve criar personagem do tipo Genjutsu")
-    void deveCriarPersonagemDoTipoGenjutsu() {
+    @DisplayName("Deve adicionar jutsu ao personagem com sucesso")
+    void deveAdicionarJutsuComSucesso() {
+        Long idPersonagem = 1L;
+        String nomeJutsu = "Novo Jutsu";
+        int dano = 65;
+        int consumo = 25;
 
-        PersonagemDTO dto = new PersonagemDTO();
-        dto.setTipoNinja("GENJUTSU");
-        dto.setNome("Itachi Uchiha");
-        dto.setIdade(21);
-        dto.setAldeia("Aldeia da Folha");
-        dto.setChakra(300);
-        dto.setJutsus(Arrays.asList("Tsukuyomi", "Amaterasu"));
+        personagemTaijutsu.adicionarJutsu(nomeJutsu, dano, consumo);
 
-        NinjaDeGenjutsu novoPersonagem = new NinjaDeGenjutsu();
-        novoPersonagem.setId(3L);
-        novoPersonagem.setNome(dto.getNome());
-        novoPersonagem.setIdade(dto.getIdade());
-        novoPersonagem.setAldeia(dto.getAldeia());
-        novoPersonagem.setChakra(dto.getChakra());
-        novoPersonagem.setJutsus(dto.getJutsus());
+        when(repository.findById(idPersonagem)).thenReturn(Optional.of(personagemTaijutsu));
+        when(repository.save(personagemTaijutsu)).thenReturn(personagemTaijutsu);
 
-        when(repository.save(any(NinjaDeGenjutsu.class))).thenReturn(novoPersonagem);
+        JutsuDTO jutsuDTO = new JutsuDTO();
+        jutsuDTO.setNome(nomeJutsu);
+        jutsuDTO.setDano(dano);
+        jutsuDTO.setConsumoDeChakra(consumo);
 
-        Personagem resultado = service.criarPersonagem(dto);
+        Personagem resultado = service.adicionarJutsu(idPersonagem, jutsuDTO);
 
         assertNotNull(resultado);
-        assertTrue(resultado instanceof NinjaDeGenjutsu);
-        assertEquals(dto.getNome(), resultado.getNome());
-        assertEquals(dto.getIdade(), resultado.getIdade());
-        assertEquals(dto.getAldeia(), resultado.getAldeia());
-        assertEquals(dto.getChakra(), resultado.getChakra());
-        assertEquals(dto.getJutsus(), resultado.getJutsus());
-        verify(repository).save(any(NinjaDeGenjutsu.class));
+        assertTrue(resultado.getJutsusMap().containsKey(nomeJutsu));
+        assertEquals(dano, resultado.getJutsu(nomeJutsu).getDano());
+        assertEquals(consumo, resultado.getJutsu(nomeJutsu).getConsumoDeChakra());
+
+        verify(repository).findById(idPersonagem);
+        verify(repository).save(personagemTaijutsu);
     }
 
     @Test
-    @DisplayName("Deve lançar exceção ao tentar criar personagem com tipo ninja inválido")
-    void deveLancarExcecaoAoTentarCriarPersonagemComTipoNinjaInvalido() {
+    @DisplayName("Deve lançar exceção ao tentar adicionar jutsu com dano inválido")
+    void deveLancarExcecaoAoTentarAdicionarJutsuComDanoInvalido() {
+        Long idPersonagem = 1L;
+        when(repository.findById(idPersonagem)).thenReturn(Optional.of(personagemTaijutsu));
+
+        JutsuDTO jutsuDTO = new JutsuDTO();
+        jutsuDTO.setNome("Jutsu Inválido");
+        jutsuDTO.setDano(0);
+        jutsuDTO.setConsumoDeChakra(25);
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            service.adicionarJutsu(idPersonagem, jutsuDTO);
+        });
+
+        assertEquals("Dano do jutsu deve ser maior que zero", exception.getMessage());
+        verify(repository).findById(idPersonagem);
+        verifyNoMoreInteractions(repository);
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao tentar adicionar jutsu com consumo de chakra inválido")
+    void deveLancarExcecaoAoTentarAdicionarJutsuComConsumoDeChakraInvalido() {
+        Long idPersonagem = 1L;
+        when(repository.findById(idPersonagem)).thenReturn(Optional.of(personagemTaijutsu));
+    
+        JutsuDTO jutsuDTO = new JutsuDTO();
+        jutsuDTO.setNome("Jutsu Inválido");
+        jutsuDTO.setDano(50);
+        jutsuDTO.setConsumoDeChakra(0);
+    
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            service.adicionarJutsu(idPersonagem, jutsuDTO);
+        });
+    
+        assertEquals("Consumo de chakra deve ser maior que zero", exception.getMessage());
+        verify(repository).findById(idPersonagem);
+        verifyNoMoreInteractions(repository);
+    }
+
+    @Test
+    @DisplayName("Deve listar jutsus do personagem com sucesso")
+    void deveListarJutsusDoPersonagemComSucesso() {
+        Long idPersonagem = 1L;
+        when(repository.findById(idPersonagem)).thenReturn(Optional.of(personagemTaijutsu));
+
+        Map<String, Object> resultado = service.listarJutsus(idPersonagem);
+
+        assertNotNull(resultado);
+        assertEquals(idPersonagem, resultado.get("personagemId"));
+        assertEquals(personagemTaijutsu.getNome(), resultado.get("nome"));
+
+        Map<String, Map<String, Object>> jutsuDetalhes = (Map<String, Map<String, Object>>) resultado.get("jutsus");
+        assertNotNull(jutsuDetalhes);
+        assertFalse(jutsuDetalhes.isEmpty());
+
+        personagemTaijutsu.getJutsusMap().forEach((nome, jutsu) -> {
+            assertTrue(jutsuDetalhes.containsKey(nome));
+            assertEquals(jutsu.getDano(), jutsuDetalhes.get(nome).get("dano"));
+            assertEquals(jutsu.getConsumoDeChakra(), jutsuDetalhes.get(nome).get("consumoDeChakra"));
+        });
+
+        verify(repository).findById(idPersonagem);
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao tentar listar jutsus de personagem inexistente")
+    void deveLancarExcecaoAoTentarListarJutsusDePersonagemInexistente() {
+        Long idPersonagemInexistente = 99L;
+        when(repository.findById(idPersonagemInexistente)).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            service.listarJutsus(idPersonagemInexistente);
+        });
+
+        assertEquals("Personagem não encontrado com ID: 99", exception.getMessage());
+        verify(repository).findById(idPersonagemInexistente);
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao tentar criar personagem com tipo ninja nulo")
+    void deveLancarExcecaoAoTentarCriarPersonagemComTipoNinjaNulo() {
         PersonagemDTO dto = new PersonagemDTO();
-        dto.setTipoNinja("INVALID");
-        dto.setNome("Invalid Ninja");
+        dto.setTipoNinja(null);
+        dto.setNome("Ninja Inválido");
         dto.setIdade(20);
         dto.setAldeia("Aldeia da Folha");
         dto.setChakra(100);
 
+        NinjaDeTaijutsu personagemEsperado = new NinjaDeTaijutsu();
+        personagemEsperado.setNome(dto.getNome());
+        personagemEsperado.setIdade(dto.getIdade());
+        personagemEsperado.setAldeia(dto.getAldeia());
+        personagemEsperado.setChakra(dto.getChakra());
+
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             service.criarPersonagem(dto);
         });
-        
+
         assertEquals("Tipo de ninja inválido", exception.getMessage());
-        verify(repository, never()).save(any(Personagem.class));
-    }
-
-    
-
-    @Test
-    @DisplayName("Deve usar jutsu de Taijutsu com sucesso")
-    void deveUsarJutsuDeTaijutsuComSucesso() {
-        Long idDePersonagem = 1L;
-        when(repository.findById(idDePersonagem)).thenReturn(Optional.of(personagemTaijutsu));
-
-        Map<String, Object> resultado = service.usarJutsu(idDePersonagem);
-
-        assertNotNull(resultado);
-        assertEquals(personagemTaijutsu.getNome(), resultado.get("nome"));
-        assertEquals("Taijutsu", resultado.get("tipoNinja"));
-        assertEquals(personagemTaijutsu.getNome() + " está usando um golpe de Taijutsu!", resultado.get("mensagem"));
-        verify(repository).findById(1L);
+        verifyNoInteractions(repository);
     }
 
     @Test
-    @DisplayName("Deve usar jutsu de Ninjutsu com sucesso")
-    void deveUsarJutsuDeNinjutsuComSucesso() {
-        Long idDePersonagem = 2L;
-        when(repository.findById(idDePersonagem)).thenReturn(Optional.of(personagemNinjutsu));
+    @DisplayName("Deve lançar exceção ao tentar criar personagem com tipo ninja vazio")
+    void deveLancarExcecaoAoTentarCriarPersonagemComTipoNinjaVazio() {
+        PersonagemDTO dto = new PersonagemDTO();
+        dto.setTipoNinja("");
+        dto.setNome("Ninja Inválido");
+        dto.setIdade(20);
+        dto.setAldeia("Aldeia da Folha");
+        dto.setChakra(100);
 
-        Map<String, Object> resultado = service.usarJutsu(idDePersonagem);
+        NinjaDeTaijutsu personagemEsperado = new NinjaDeTaijutsu();
+        personagemEsperado.setNome(dto.getNome());
+        personagemEsperado.setIdade(dto.getIdade());
+        personagemEsperado.setAldeia(dto.getAldeia());
+        personagemEsperado.setChakra(dto.getChakra());
 
-        assertNotNull(resultado);
-        assertEquals(personagemNinjutsu.getNome(), resultado.get("nome"));
-        assertEquals("Ninjutsu", resultado.get("tipoNinja"));
-        assertEquals(personagemNinjutsu.getNome() + " está usando um jutsu de Ninjutsu!", resultado.get("mensagem"));
-        verify(repository).findById(idDePersonagem);
-    }
-
-    @Test
-    @DisplayName("Deve usar jutsu de Genjutsu com sucesso")
-    void deveUsarJutsuDeGenjutsuComSucesso() {
-        Long idDePersonagem = 3L;
-        when(repository.findById(idDePersonagem)).thenReturn(Optional.of(personagemGenjutsu));
-
-        Map<String, Object> resultado = service.usarJutsu(idDePersonagem);
-
-        assertNotNull(resultado);
-        assertEquals(personagemGenjutsu.getNome(), resultado.get("nome"));
-        assertEquals("Genjutsu", resultado.get("tipoNinja"));
-        assertEquals(personagemGenjutsu.getNome() + " está usando um jutsu de Genjutsu!", resultado.get("mensagem"));
-        verify(repository).findById(idDePersonagem);
-    }
-    
-    @Test
-    @DisplayName("Deve lançar exceção ao tentar usar jutsu com personagem não ninja")
-    void deveLancarExcecaoAoTentarUsarJutsuComPersonagemNaoNinja() {
-        Long idPersonagem = 99L;
-        Personagem personagemGenerico = mock(Personagem.class);
-        when(personagemGenerico.getNome()).thenReturn("Personagem Genérico");
-        
-        when(repository.findById(idPersonagem)).thenReturn(Optional.of(personagemGenerico));
-        
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            service.usarJutsu(idPersonagem);
+            service.criarPersonagem(dto);
         });
-        
-        assertEquals("Personagem não é um ninja.", exception.getMessage());
-        verify(repository).findById(idPersonagem);
+        assertEquals("Tipo de ninja inválido", exception.getMessage());
+        verifyNoInteractions(repository);
     }
 
     @Test
-    @DisplayName("Deve desviar com Taijutsu com sucesso")
-    void deveDesviarComTaijutsuComSucesso() {
+    @DisplayName("Deve atualizar personagem com DTO com sucesso")
+    void deveAtualizarPersonagemComDTOComSucesso() {
         Long idPersonagem = 1L;
+        String novoNome = "Rock Lee Atualizado";
+        int novaIdade = 18;
+        String novaAldeia = "Aldeia da Areia";
+        int novoChakra = 120;
+        List<String> novosJutsus = Arrays.asList("Lotus Primária");
+
+        PersonagemAtualizarDTO dto = new PersonagemAtualizarDTO();
+        dto.setNome(novoNome);
+        dto.setIdade(novaIdade);
+        dto.setAldeia(novaAldeia);
+        dto.setChakra(novoChakra);
+        dto.setJutsus(novosJutsus);
+
+        NinjaDeTaijutsu personagemAtualizado = new NinjaDeTaijutsu();
+        personagemAtualizado.setId(idPersonagem);
+        personagemAtualizado.setNome(novoNome);
+        personagemAtualizado.setIdade(novaIdade);
+        personagemAtualizado.setAldeia(novaAldeia);
+        personagemAtualizado.setChakra(novoChakra);
+        personagemAtualizado.adicionarJutsu("Lotus Primária", 50, 20);
+
         when(repository.findById(idPersonagem)).thenReturn(Optional.of(personagemTaijutsu));
+        when(repository.save(personagemAtualizado)).thenReturn(personagemAtualizado);
 
-        Map<String, Object> resultado = service.desviar(idPersonagem);
-
-        assertNotNull(resultado);
-        assertEquals(personagemTaijutsu.getNome(), resultado.get("nome"));
-        assertEquals("Taijutsu", resultado.get("tipoNinja"));
-        assertEquals(personagemTaijutsu.getNome() + " está desviando usando suas habilidades de Taijutsu!", resultado.get("mensagem"));
-        verify(repository).findById(idPersonagem);
-    }
-    
-    @Test
-    @DisplayName("Deve desviar com Ninjutsu com sucesso")
-    void deveDesviarComNinjutsuComSucesso() {
-        Long idPersonagem = 2L;
-        when(repository.findById(idPersonagem)).thenReturn(Optional.of(personagemNinjutsu));
-
-        Map<String, Object> resultado = service.desviar(idPersonagem);
+        Personagem resultado = service.atualizarPersonagem(idPersonagem, dto);
 
         assertNotNull(resultado);
-        assertEquals(personagemNinjutsu.getNome(), resultado.get("nome"));
-        assertEquals("Ninjutsu", resultado.get("tipoNinja"));
-        assertEquals(personagemNinjutsu.getNome() + " está desviando usando suas habilidades de Ninjutsu!", resultado.get("mensagem"));
-        verify(repository).findById(idPersonagem);
-    }
-    
-    @Test
-    @DisplayName("Deve desviar com Genjutsu com sucesso")
-    void deveDesviarComGenjutsuComSucesso() {
-        Long idPersonagem = 3L;
-        when(repository.findById(idPersonagem)).thenReturn(Optional.of(personagemGenjutsu));
+        assertEquals(novoNome, resultado.getNome());
+        assertEquals(novaIdade, resultado.getIdade());
+        assertEquals(novaAldeia, resultado.getAldeia());
+        assertEquals(novoChakra, resultado.getChakra());
+        assertTrue(resultado.getJutsusMap().containsKey("Lotus Primária"));
 
-        Map<String, Object> resultado = service.desviar(idPersonagem);
+        verify(repository).findById(idPersonagem);
+        verify(repository).save(personagemAtualizado);
+    }
+
+    @Test
+    @DisplayName("Deve atualizar apenas os campos não nulos do personagem")
+    void deveAtualizarApenasOsCamposNaoNulosDoPersonagem() {
+        Long idPersonagem = 1L;
+        String nomeOriginal = "Rock Lee";
+        int idadeOriginal = 16;
+        String aldeiaOriginal = "Aldeia da Folha";
+        int chakraOriginal = 100;
+
+        personagemTaijutsu.setNome(nomeOriginal);
+        personagemTaijutsu.setIdade(idadeOriginal);
+        personagemTaijutsu.setAldeia(aldeiaOriginal);
+        personagemTaijutsu.setChakra(chakraOriginal);
+
+        String novoNome = "Rock Lee Atualizado";
+        PersonagemAtualizarDTO dto = new PersonagemAtualizarDTO();
+        dto.setNome(novoNome);
+
+        NinjaDeTaijutsu personagemAtualizado = new NinjaDeTaijutsu();
+        personagemAtualizado.setId(idPersonagem);
+        personagemAtualizado.setNome(novoNome);
+        personagemAtualizado.setIdade(idadeOriginal);
+        personagemAtualizado.setAldeia(aldeiaOriginal);
+        personagemAtualizado.setChakra(chakraOriginal);
+        personagemAtualizado.adicionarJutsu("Dynamic Entry", 50, 20);
+        personagemAtualizado.adicionarJutsu("Leaf Hurricane", 60, 25);
+
+        when(repository.findById(idPersonagem)).thenReturn(Optional.of(personagemTaijutsu));
+        when(repository.save(personagemAtualizado)).thenReturn(personagemAtualizado);
+
+        Personagem resultado = service.atualizarPersonagem(idPersonagem, dto);
 
         assertNotNull(resultado);
-        assertEquals(personagemGenjutsu.getNome(), resultado.get("nome"));
-        assertEquals("Genjutsu", resultado.get("tipoNinja"));
-        assertEquals(personagemGenjutsu.getNome() + " está desviando usando suas habilidades de Genjutsu!", resultado.get("mensagem"));
+        assertEquals(novoNome, resultado.getNome());
+        assertEquals(idadeOriginal, resultado.getIdade());
+        assertEquals(aldeiaOriginal, resultado.getAldeia());
+        assertEquals(chakraOriginal, resultado.getChakra());
+        assertEquals(2, resultado.getJutsusMap().size());
+        assertTrue(resultado.getJutsusMap().containsKey("Dynamic Entry"));
+        assertTrue(resultado.getJutsusMap().containsKey("Leaf Hurricane"));
+
         verify(repository).findById(idPersonagem);
+        verify(repository).save(personagemAtualizado);
     }
-    
-    @Test
-    @DisplayName("Deve lançar exceção ao tentar desviar com personagem não ninja")
-    void deveLancarExcecaoAoTentarDesviarComPersonagemNaoNinja() {
-        Long idPersonagem = 99L;
-        Personagem personagemGenerico = mock(Personagem.class);
-        when(personagemGenerico.getNome()).thenReturn("Personagem Genérico");
-        
-        when(repository.findById(idPersonagem)).thenReturn(Optional.of(personagemGenerico));
-        
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            service.desviar(idPersonagem);
-        });
-        
-        assertEquals("Personagem não é um ninja.", exception.getMessage());
-        verify(repository).findById(idPersonagem);
-    }
+
 }

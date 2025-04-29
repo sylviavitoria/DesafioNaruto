@@ -16,13 +16,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.sylviavitoria.naruto.dto.JutsuDTO;
 import com.sylviavitoria.naruto.dto.PersonagemAtualizarDTO;
 import com.sylviavitoria.naruto.dto.PersonagemDTO;
+import com.sylviavitoria.naruto.dto.PersonagemResponseDTO;
 import com.sylviavitoria.naruto.model.Personagem;
 import com.sylviavitoria.naruto.service.PersonagemService;
 
 import java.util.Map;
-
 @RestController
 @RequestMapping("/api/v1/personagens")
 @RequiredArgsConstructor
@@ -37,27 +38,17 @@ public class PersonagemController {
             @ApiResponse(responseCode = "200", description = "Operação bem-sucedida"),
             @ApiResponse(responseCode = "500", description = "Erro interno do servidor")
     })
-    public ResponseEntity<Page<Personagem>> listarTodos(
-            @Parameter(description = "Número da página (começa em 0)", example = "0") @RequestParam(defaultValue = "0") int page,
-
-            @Parameter(description = "Tamanho da página", example = "10") @RequestParam(defaultValue = "10") int size,
-
-            @Parameter(description = "Campo para ordenação (ex: nome, idade)", example = "nome") @RequestParam(required = false) String sort) {
-
-        Pageable pageable;
-        if (sort != null && !sort.isEmpty()) {
-            try {
-                pageable = PageRequest.of(page, size, Sort.by(sort));
-            } catch (Exception e) {
-                pageable = PageRequest.of(page, size);
-            }
-        } else {
-            pageable = PageRequest.of(page, size);
-        }
-
-        return ResponseEntity.ok(service.listarTodos(pageable));
+    public ResponseEntity<Page<PersonagemResponseDTO>> listarTodos(
+            @Parameter(description = "Número da página (começa em 0)", example = "0") 
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Tamanho da página", example = "10") 
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Campo para ordenação (ex: nome, idade)", example = "nome") 
+            @RequestParam(required = false) String sort) {
+        return ResponseEntity.ok(service.listarTodosDTO(page, size, sort));
     }
 
+    
     @GetMapping("/{id}")
     @Operation(summary = "Busca um personagem por ID", description = "Retorna um personagem específico pelo seu ID")
     @ApiResponses(value = {
@@ -65,9 +56,8 @@ public class PersonagemController {
             @ApiResponse(responseCode = "404", description = "Personagem não encontrado"),
             @ApiResponse(responseCode = "500", description = "Erro interno do servidor")
     })
-    public ResponseEntity<Personagem> buscarPorId(
-            @Parameter(description = "ID do personagem", required = true) @PathVariable Long id) {
-        return ResponseEntity.ok(service.buscarPorId(id));
+    public ResponseEntity<PersonagemResponseDTO> buscarPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(service.buscarPorIdDTO(id));
     }
 
     @PostMapping
@@ -77,8 +67,8 @@ public class PersonagemController {
             @ApiResponse(responseCode = "400", description = "Dados inválidos"),
             @ApiResponse(responseCode = "500", description = "Erro interno do servidor")
     })
-    public ResponseEntity<Personagem> criar(@RequestBody PersonagemDTO dto) {
-        return ResponseEntity.ok(service.criarPersonagem(dto));
+    public ResponseEntity<PersonagemResponseDTO> criar(@RequestBody PersonagemDTO dto) {
+        return ResponseEntity.ok(service.criarPersonagemDTO(dto));
     }
 
     @PutMapping("/{id}")
@@ -89,10 +79,10 @@ public class PersonagemController {
             @ApiResponse(responseCode = "404", description = "Personagem não encontrado"),
             @ApiResponse(responseCode = "500", description = "Erro interno do servidor")
     })
-    public ResponseEntity<Personagem> atualizar(
-            @Parameter(description = "ID do personagem", required = true) @PathVariable Long id,
+    public ResponseEntity<PersonagemResponseDTO> atualizar(
+            @PathVariable Long id, 
             @RequestBody PersonagemAtualizarDTO dto) {
-        return ResponseEntity.ok(service.atualizarPersonagem(id, dto));
+        return ResponseEntity.ok(service.atualizarPersonagemDTO(id, dto));
     }
 
     @DeleteMapping("/{id}")
@@ -102,35 +92,38 @@ public class PersonagemController {
             @ApiResponse(responseCode = "404", description = "Personagem não encontrado"),
             @ApiResponse(responseCode = "500", description = "Erro interno do servidor")
     })
-    public ResponseEntity<Void> deletar(
-            @Parameter(description = "ID do personagem", required = true) @PathVariable Long id) {
+    public ResponseEntity<Void> deletar(@PathVariable Long id) {
         service.deletar(id);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{id}/usar-jutsu")
-    @Operation(summary = "Personagem usa jutsu", description = "Faz um personagem usar seu jutsu conforme seu tipo de ninja")
+    @PostMapping("/{id}/jutsus")
+    @Operation(summary = "Adiciona um novo jutsu ao personagem", description = "Adiciona um novo jutsu com nome, dano e consumo de chakra")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Jutsu executado com sucesso", content = @Content(schema = @Schema(implementation = Map.class))),
-            @ApiResponse(responseCode = "400", description = "Personagem não é um ninja"),
+            @ApiResponse(responseCode = "200", description = "Jutsu adicionado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Personagem não encontrado"),
             @ApiResponse(responseCode = "500", description = "Erro interno do servidor")
     })
-    public ResponseEntity<Map<String, Object>> usarJutsu(
-            @Parameter(description = "ID do personagem", required = true) @PathVariable Long id) {
-        return ResponseEntity.ok(service.usarJutsu(id));
+    public ResponseEntity<PersonagemResponseDTO> adicionarJutsu(
+        @Parameter(description = "ID do personagem", required = true) @PathVariable Long id,
+        @Parameter(description = "Dados do jutsu", required = true, schema = @Schema(example = """
+                {
+                  "nome": "Sabio",
+                  "dano": 70,
+                  "consumoDeChakra": 10
+                }
+                """)) @RequestBody JutsuDTO jutsuDTO) {
+        return ResponseEntity.ok(service.adicionarJutsuDTO(id, jutsuDTO));
     }
 
-    @GetMapping("/{id}/desviar")
-    @Operation(summary = "Personagem desvia", description = "Faz um personagem desviar conforme seu tipo de ninja")
+    @GetMapping("/{id}/jutsus")
+    @Operation(summary = "Lista todos os jutsus de um personagem", description = "Retorna a lista de jutsus com detalhes de dano e consumo")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Desvio executado com sucesso", content = @Content(schema = @Schema(implementation = Map.class))),
-            @ApiResponse(responseCode = "400", description = "Personagem não é um ninja"),
+            @ApiResponse(responseCode = "200", description = "Operação bem-sucedida"),
             @ApiResponse(responseCode = "404", description = "Personagem não encontrado"),
             @ApiResponse(responseCode = "500", description = "Erro interno do servidor")
     })
-    public ResponseEntity<Map<String, Object>> desviar(
-            @Parameter(description = "ID do personagem", required = true) @PathVariable Long id) {
-        return ResponseEntity.ok(service.desviar(id));
+    public ResponseEntity<Map<String, Object>> listarJutsus(@PathVariable Long id) {
+        return ResponseEntity.ok(service.listarJutsus(id));
     }
 }
