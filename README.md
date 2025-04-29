@@ -25,7 +25,7 @@ O objetivo é unir teoria e prática em uma solução que implemente:
 
 ---
 
-## 🦊 Parte 1: Programação Orientada a Objetos (POO) - Naruto
+# 🦊 Parte 1: Programação Orientada a Objetos (POO) - Naruto
 
 ### Requisitos
 
@@ -101,8 +101,93 @@ O método `usarJutsu` foi implementado para buscar um personagem pelo ID e defin
 A chamada `ninja.usarJutsu();` ou `ninja.desviar();` não apenas executa a lógica no back-end, como também imprime no console.
 
 ---
+# 🍥 Parte 2: Sistema de Batalhas
 
-## 🍡 Parte 2: Desenvolvimento da API
+### Classe Personagem:
+- **Atributos:**
+  - `nome` (String)
+  - `idade` (int)
+  - `aldeia` (String)
+  - `jutsusMap` (Map<String, Jutsu>)
+  - `chakra` (int = 100)
+  - `vida` (int = 100)
+
+- **Métodos:**
+  - **adicionarJutsu(String nomeJutsu, int dano, int consumoDeChakra):** Adiciona um novo jutsu ao mapa.
+  - **diminuirChakra(int quantidade):** Reduz o chakra do personagem.
+  - **receberDano(int dano):** Reduz a vida do personagem.
+  - **podeLutar():** Verifica se o personagem tem vida e chakra suficientes.
+
+---
+
+### Interface Ninja
+- **Métodos:**
+  - **usarJutsu(String nomeJutsu, Personagem oponente):** Usa um jutsu específico contra um oponente.
+  - **desviar(String jutsuRecebido, int danoPotencial):** Tenta desviar de um ataque específico.
+  - **podeLutar():** Verifica se o ninja pode continuar lutando.
+
+---
+
+### Classes Específicas
+
+#### NinjaDeTaijutsu
+- Especialista em Taijutsu (combate físico).
+- **usarJutsu():** Mensagem específica para Taijutsu.
+- **desviar():** Mensagem específica para esquiva com Taijutsu.
+- **Alto potencial de esquiva:** 60% de chance.
+
+#### NinjaDeNinjutsu
+- Especialista em Ninjutsu (técnicas de chakra).
+- **usarJutsu():** Mensagem específica para Ninjutsu.
+- **desviar():** Mensagem específica para esquiva com Ninjutsu.
+- **Chance média de esquiva:** 40% de chance.
+
+#### NinjaDeGenjutsu
+- Especialista em Genjutsu (ilusões).
+- **usarJutsu():** Mensagem específica para Genjutsu.
+- **desviar():** Mensagem específica para esquiva com Genjutsu.
+- **Chance moderada de esquiva:** 30% de chance.
+
+---
+
+### Classe Jutsu
+- Representa as técnicas que os ninjas podem utilizar.
+- **Atributos:**
+  - `dano`: Valor do dano que o jutsu causa.
+  - `consumoDeChakra`: Quantidade de chakra necessária para usar o jutsu.
+- **Método:**
+  - **calcularDanoReal():** Calcula o dano efetivo com base em um modificador.
+
+---
+
+### Regras de Batalha
+
+1. **Condições para Lutar:**
+   - Um ninja só pode atacar ou defender se tiver `chakra > 0` e `vida > 0`.
+   - Cada ataque consome 10 pontos de chakra.
+
+2. **Ataques:**
+   - Cada ninja possui jutsus específicos armazenados em um `Map`.
+   - Ao usar um jutsu, o ninja causa dano ao oponente e consome chakra.
+   - Se o ninja não conhece o jutsu ou não tem chakra suficiente, o ataque falha.
+
+3. **Defesa:**
+   - Ao receber um ataque, o ninja tenta desviar.
+   - A chance de desvio varia conforme a especialização:
+     - Taijutsu: 60% de chance.
+     - Ninjutsu: 40% de chance.
+     - Genjutsu: 30% de chance.
+   - Se conseguir desviar, não recebe dano.
+   - Caso contrário, recebe o dano completo do jutsu.
+
+4. **Fim da Batalha:**
+   - Um ninja perde quando:
+     - Sua vida chega a 0.
+     - Seu chakra chega a 0.
+---
+
+
+# 🍡 Parte 2: Desenvolvimento da API
 
 ### Recursos
 A API deverá expor um CRUD completo para personagens (`Personagem`).
@@ -157,15 +242,21 @@ A API deverá expor um CRUD completo para personagens (`Personagem`).
 `POST` `http://localhost:8080/api/v1/personagens`
 ```
 {
-    "tipoNinja": "NINJUTSU",
-    "nome": "Naruto Uzumaki",
+    "tipoNinja": "GENJUTSU",
+    "nome": "sasuke",
     "idade": 17,
     "aldeia": "Aldeia da Folha",
-    "chakra": 1000,
-    "jutsus": [
-        "Chidori",
-        "Sharingan"
-    ]
+    "chakra": 100,
+    "jutsus": {
+        "RAZENGAN": {
+            "dano": 70,
+            "consumoDeChakra": 30
+        },
+        "Kage Bunshin": {
+            "dano": 40,
+            "consumoDeChakra": 20
+        }
+    }
 }
 ```
 ## 3. 🌀 Listagens
@@ -173,9 +264,7 @@ A API deverá expor um CRUD completo para personagens (`Personagem`).
 |--------|-------------------------------|--------------------------------|
 | `GET`  | `http://localhost:8080/api/v1/personagens`         | Lista todos os personagens.    |
 | `GET`  | `http://localhost:8080/api/v1/personagens/{id}`    | Busca um personagem pelo ID.   |
-| `GET`  | `http://localhost:8080/api/v1/personagens/{id}/usar-jutsu` | Irá realizar jutsu.   |
-| `GET`  | `http://localhost:8080/api/v1/personagens/{id}/desviar` | Irá realizar desviar.   |
-
+| `GET`  | `http://localhost:8080/api/v1/personagens/{id}/jutsus` | Irá listar todos os jutsus do personagem. |
 
 ## 4. 💨 Atualiza dados do personagem
 `PUT`  `http://localhost:8080/api/v1/personagens/{id}`
@@ -192,11 +281,30 @@ A API deverá expor um CRUD completo para personagens (`Personagem`).
     ]
 }
 ```
+## 5. 🌀 Adicionar Jutsu a um Personagem
+🌀 `POST` `http://localhost:8080/api/v1/personagens` 
+```
+{
+    "nome": "Sabio",
+    "dano": 70,
+    "consumoDeChakra": 30
+}
+```
 
-## 5. 💥  Remove dados do personagem
+## 6. 💥  Remove dados do personagem
 `DELETE`  `http://localhost:8080/api/v1/personagens/{id}`
 
----
+
+# 7. ⚔️ Sistema de Batalhas
+Este endpoint permite que um personagem ataque outro usando um jutsu específico.
+`POST` `http://localhost:8080/api/v1/batalhas/atacar/{atacanteId}/{defensorId}?nomeJutsu=Rasengan`
+
+1. Parâmetros:
+
+- atacanteId: ID do personagem que realizará o ataque.
+- defensorId: ID do personagem que receberá o ataque.
+- nomeJutsu: Nome do jutsu que será utilizado (parâmetro query).
+
 
 ## 🌪 Configuração de Ambientes
 
@@ -255,33 +363,55 @@ Esse arquivo .env é utilizado para centralizar as variáveis de ambiente da apl
 
 ---
 
-## 🌬️ Como Executar
+# 🌬️ Como Executar
 
-1. Clone o repositório:
+## Pré-requisitos
+- Java 21+
+- Maven
+- Docker
+- PostgreSQL ou H2 Database
 
+## Passos para Execução
+
+### 1. Clone o repositório
 ```bash
 git clone https://github.com/sylviavitoria/DesafioNaruto.git
 ```
 
-2. Configure o `application.yml` ou `.env` com seu banco de dados.
+### 2. Configure o ambiente
+Ajuste as configurações de banco de dados em um dos arquivos:
+- Configure suas credencias citado anteriormente e defina variáveis no arquivo `.env`
 
-3. Para executar via Maven:
+### 3. Execute a aplicação
 
+**Opção 1: Via Maven**
 ```bash
 mvn spring-boot:run
 ```
 
-Ou via Docker:
-
+**Opção 2: Via Docker**
 ```bash
 docker compose up --build
 ```
 
-4. Acesse:
+## 4. Acesse a Aplicação
 
-- Swagger UI: `http://localhost:8080/swagger-ui.html`
-- H2 Console: `http://localhost:8080/h2-console` *(se usar H2)*
+### Documentação da API
+- **Swagger UI:** `http://localhost:8080/swagger-ui.html`
+  
+  ![Interface do Swagger](https://github.com/user-attachments/assets/89f89dca-a858-45ba-81f7-f55b68de2a3e)
 
----
+### Teste dos Endpoints
+- **Postman:**:  Adicione os Endpoints da API mencionados anteriormente `http://localhost:8080/api/v1/...`
+
+### Gerenciamento do Banco de Dados
+- **H2 Database** (para ambiente de desenvolvimento):
+  - Console: `http://localhost:8080/h2-console`
+
+- **PostgreSQL** (recomendado para ambiente Docker):
+  - **pgAdmin:** `http://localhost:5050`
+  - Credenciais de login: Definidas no arquivo `.env`
+
+  
 
 
