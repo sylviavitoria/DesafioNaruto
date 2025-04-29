@@ -243,12 +243,12 @@ A API deverá expor um CRUD completo para personagens (`Personagem`).
 ```
 {
     "tipoNinja": "GENJUTSU",
-    "nome": "sasuke",
+    "nome": "Naruto Uzumaki",
     "idade": 17,
     "aldeia": "Aldeia da Folha",
     "chakra": 100,
     "jutsus": {
-        "RAZENGAN": {
+        "Rasengan": {
             "dano": 70,
             "consumoDeChakra": 30
         },
@@ -271,7 +271,7 @@ A API deverá expor um CRUD completo para personagens (`Personagem`).
 ```
 {
     "tipoNinja": "NINJUTSU",
-    "nome": "sasuke uchiha",
+    "nome": "Sasuke Uchiha",
     "idade": 16,
     "aldeia": "Aldeia da Folha",
     "chakra": 100,
