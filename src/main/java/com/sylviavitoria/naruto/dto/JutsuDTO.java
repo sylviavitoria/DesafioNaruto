@@ -1,9 +1,11 @@
 package com.sylviavitoria.naruto.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Data;
+import lombok.Builder;
+import lombok.Value;
 
-@Data
+@Value
+@Builder
 @Schema(description = "Dados para criação de um jutsu")
 public class JutsuDTO {
     @Schema(description = "Nome do jutsu", example = "Rasengan", required = true)
