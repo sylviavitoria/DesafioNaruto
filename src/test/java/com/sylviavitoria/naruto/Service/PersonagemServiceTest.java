@@ -281,10 +281,11 @@ public class PersonagemServiceTest {
         dto.setChakra(500);
 
         Map<String, JutsuDTO> jutsusMap = new HashMap<>();
-        JutsuDTO rasengan = new JutsuDTO();
-        rasengan.setNome("Rasengan");
-        rasengan.setDano(70);
-        rasengan.setConsumoDeChakra(30);
+        JutsuDTO rasengan = JutsuDTO.builder()
+            .nome("Rasengan")
+            .dano(70)
+            .consumoDeChakra(30)
+            .build();
         jutsusMap.put("Rasengan", rasengan);
 
         dto.setJutsus(jutsusMap);
@@ -323,10 +324,11 @@ public class PersonagemServiceTest {
         when(repository.findById(idPersonagem)).thenReturn(Optional.of(personagemTaijutsu));
         when(repository.save(personagemTaijutsu)).thenReturn(personagemTaijutsu);
 
-        JutsuDTO jutsuDTO = new JutsuDTO();
-        jutsuDTO.setNome(nomeJutsu);
-        jutsuDTO.setDano(dano);
-        jutsuDTO.setConsumoDeChakra(consumo);
+        JutsuDTO jutsuDTO = JutsuDTO.builder()
+            .nome(nomeJutsu)
+            .dano(dano)
+            .consumoDeChakra(consumo)
+            .build();
 
         Personagem resultado = service.adicionarJutsu(idPersonagem, jutsuDTO);
 
@@ -345,10 +347,11 @@ public class PersonagemServiceTest {
         Long idPersonagem = 1L;
         when(repository.findById(idPersonagem)).thenReturn(Optional.of(personagemTaijutsu));
 
-        JutsuDTO jutsuDTO = new JutsuDTO();
-        jutsuDTO.setNome("Jutsu Inválido");
-        jutsuDTO.setDano(0);
-        jutsuDTO.setConsumoDeChakra(25);
+        JutsuDTO jutsuDTO = JutsuDTO.builder()
+            .nome("Jutsu Inválido")
+            .dano(0)
+            .consumoDeChakra(20)
+            .build();
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             service.adicionarJutsu(idPersonagem, jutsuDTO);
@@ -365,10 +368,11 @@ public class PersonagemServiceTest {
         Long idPersonagem = 1L;
         when(repository.findById(idPersonagem)).thenReturn(Optional.of(personagemTaijutsu));
     
-        JutsuDTO jutsuDTO = new JutsuDTO();
-        jutsuDTO.setNome("Jutsu Inválido");
-        jutsuDTO.setDano(50);
-        jutsuDTO.setConsumoDeChakra(0);
+        JutsuDTO jutsuDTO = JutsuDTO.builder()
+        .nome("Jutsu Inválido")
+        .dano(50)
+        .consumoDeChakra(0)
+        .build();
     
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             service.adicionarJutsu(idPersonagem, jutsuDTO);

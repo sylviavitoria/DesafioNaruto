@@ -81,29 +81,19 @@ public class PersonagemControllerTest {
                 personagemDTO.setChakra(90);
 
                 Map<String, JutsuDTO> jutsusDTO = new HashMap<>();
-                JutsuDTO chidori = new JutsuDTO();
-                chidori.setNome("Chidori");
-                chidori.setDano(70);
-                chidori.setConsumoDeChakra(30);
+                JutsuDTO chidori = JutsuDTO.builder()
+                                .nome("Chidori")
+                                .dano(70)
+                                .consumoDeChakra(30)
+                                .build();
+
                 jutsusDTO.put("Chidori", chidori);
-
-                JutsuDTO sharingan = new JutsuDTO();
-                sharingan.setNome("Sharingan");
-                sharingan.setDano(40);
-                sharingan.setConsumoDeChakra(20);
-                jutsusDTO.put("Sharingan", sharingan);
-
                 personagemDTO.setJutsus(jutsusDTO);
 
                 personagemAtualizarDTO = new PersonagemAtualizarDTO();
                 personagemAtualizarDTO.setNome("Naruto Uzumaki (Modo Sábio)");
                 personagemAtualizarDTO.setChakra(150);
                 personagemAtualizarDTO.setJutsus(Arrays.asList("Rasengan", "Rasenshuriken"));
-
-                jutsuDTO = new JutsuDTO();
-                jutsuDTO.setNome("Rasenshuriken");
-                jutsuDTO.setDano(100);
-                jutsuDTO.setConsumoDeChakra(50);
 
                 jutsusMap = new HashMap<>();
                 jutsusMap.put("personagemId", 1L);
@@ -127,14 +117,15 @@ public class PersonagemControllerTest {
         @DisplayName("Deve retornar lista paginada de personagens")
         @WithMockUser
         void listarTodos_DeveRetornarPersonagensPaginados() throws Exception {
-                PersonagemResponseDTO dto = new PersonagemResponseDTO();
-                dto.setId(1L);
-                dto.setNome("Naruto Uzumaki");
-                dto.setIdade(17);
-                dto.setAldeia("Aldeia da Folha");
-                dto.setChakra(100);
-                dto.setTipoNinja("NINJUTSU");
-                dto.setJutsus(Arrays.asList("Rasengan", "Kage Bunshin no Jutsu"));
+                PersonagemResponseDTO dto = PersonagemResponseDTO.builder()
+                                .id(1L)
+                                .nome("Naruto Uzumaki")
+                                .idade(17)
+                                .aldeia("Aldeia da Folha")
+                                .chakra(100)
+                                .tipoNinja("NINJUTSU")
+                                .jutsus(Arrays.asList("Rasengan", "Kage Bunshin no Jutsu"))
+                                .build();
 
                 Page<PersonagemResponseDTO> paginaDTO = new PageImpl<>(Arrays.asList(dto));
 
@@ -152,19 +143,19 @@ public class PersonagemControllerTest {
                 verify(personagemService).listarTodosDTO(0, 10, null);
         }
 
-        
         @Test
         @DisplayName("Deve listar personagens paginados com ordenação")
         @WithMockUser
         void listarTodos_ComParametroDeOrdenacao_DeveRetornarPersonagensPaginados() throws Exception {
-                PersonagemResponseDTO dto = new PersonagemResponseDTO();
-                dto.setId(1L);
-                dto.setNome("Naruto Uzumaki");
-                dto.setIdade(17);
-                dto.setAldeia("Aldeia da Folha");
-                dto.setChakra(100);
-                dto.setTipoNinja("NINJUTSU");
-                dto.setJutsus(Arrays.asList("Rasengan", "Kage Bunshin no Jutsu"));
+                PersonagemResponseDTO dto = PersonagemResponseDTO.builder()
+                                .id(1L)
+                                .nome("Naruto Uzumaki")
+                                .idade(17)
+                                .aldeia("Aldeia da Folha")
+                                .chakra(100)
+                                .tipoNinja("NINJUTSU")
+                                .jutsus(Arrays.asList("Rasengan", "Kage Bunshin no Jutsu"))
+                                .build();
 
                 Page<PersonagemResponseDTO> paginaDTO = new PageImpl<>(Arrays.asList(dto));
 
@@ -219,21 +210,20 @@ public class PersonagemControllerTest {
                 verify(personagemService).listarJutsus(idPersonagemInexistente);
         }
 
-        
-
         @Test
         @DisplayName("Deve buscar personagem por ID")
         @WithMockUser
         void buscarPorId_DeveRetornarPersonagem() throws Exception {
                 Long id = 1L;
-                PersonagemResponseDTO dto = new PersonagemResponseDTO();
-                dto.setId(id);
-                dto.setNome("Naruto Uzumaki");
-                dto.setIdade(17);
-                dto.setAldeia("Aldeia da Folha");
-                dto.setChakra(100);
-                dto.setTipoNinja("NINJUTSU");
-                dto.setJutsus(Arrays.asList("Rasengan", "Kage Bunshin no Jutsu"));
+                PersonagemResponseDTO dto = PersonagemResponseDTO.builder()
+                                .id(1L)
+                                .nome("Naruto Uzumaki")
+                                .idade(17)
+                                .aldeia("Aldeia da Folha")
+                                .chakra(100)
+                                .tipoNinja("NINJUTSU")
+                                .jutsus(Arrays.asList("Rasengan", "Kage Bunshin no Jutsu"))
+                                .build();
 
                 when(personagemService.buscarPorIdDTO(id)).thenReturn(dto);
 
@@ -258,14 +248,15 @@ public class PersonagemControllerTest {
                 requestDto.setAldeia("Aldeia da Folha");
                 requestDto.setChakra(100);
 
-                PersonagemResponseDTO responseDto = new PersonagemResponseDTO();
-                responseDto.setId(1L);
-                responseDto.setNome("Naruto Uzumaki");
-                responseDto.setIdade(17);
-                responseDto.setAldeia("Aldeia da Folha");
-                responseDto.setChakra(100);
-                responseDto.setTipoNinja("NINJUTSU");
-                responseDto.setJutsus(Arrays.asList("Rasengan"));
+                PersonagemResponseDTO responseDto = PersonagemResponseDTO.builder()
+                                .id(1L)
+                                .nome("Naruto Uzumaki")
+                                .idade(17)
+                                .aldeia("Aldeia da Folha")
+                                .chakra(100)
+                                .tipoNinja("NINJUTSU")
+                                .jutsus(Arrays.asList("Rasengan", "Kage Bunshin no Jutsu"))
+                                .build();
 
                 when(personagemService.criarPersonagemDTO(requestDto)).thenReturn(responseDto);
 
@@ -280,7 +271,6 @@ public class PersonagemControllerTest {
                 verify(personagemService).criarPersonagemDTO(requestDto);
         }
 
-        
         @Test
         @DisplayName("Deve atualizar personagem com sucesso")
         @WithMockUser
@@ -291,14 +281,16 @@ public class PersonagemControllerTest {
                 requestDto.setChakra(150);
                 requestDto.setJutsus(Arrays.asList("Rasengan", "Rasenshuriken"));
 
-                PersonagemResponseDTO responseDto = new PersonagemResponseDTO();
-                responseDto.setId(id);
-                responseDto.setNome("Naruto Uzumaki (Modo Sábio)");
-                responseDto.setIdade(17);
-                responseDto.setAldeia("Aldeia da Folha");
-                responseDto.setChakra(150);
-                responseDto.setTipoNinja("NINJUTSU");
-                responseDto.setJutsus(Arrays.asList("Rasengan", "Rasenshuriken"));
+                PersonagemResponseDTO responseDto = PersonagemResponseDTO.builder()
+                                .id(1L)
+                                .nome("Naruto Uzumaki (Modo Sábio)") 
+                                .idade(17)
+                                .aldeia("Aldeia da Folha")
+                                .chakra(150)
+                                .vida(100)
+                                .tipoNinja("NINJUTSU")
+                                .jutsus(Arrays.asList("Rasengan", "Rasenshuriken")) 
+                                .build();
 
                 when(personagemService.atualizarPersonagemDTO(id, requestDto)).thenReturn(responseDto);
 
@@ -310,7 +302,9 @@ public class PersonagemControllerTest {
                                 .andExpect(jsonPath("$.nome").value("Naruto Uzumaki (Modo Sábio)"))
                                 .andExpect(jsonPath("$.chakra").value(150))
                                 .andExpect(jsonPath("$.jutsus").isArray())
-                                .andExpect(jsonPath("$.jutsus", hasSize(2)));
+                                .andExpect(jsonPath("$.jutsus", hasSize(2)))
+                                .andExpect(jsonPath("$.jutsus[0]").value("Rasengan"))
+                                .andExpect(jsonPath("$.jutsus[1]").value("Rasenshuriken"));
 
                 verify(personagemService).atualizarPersonagemDTO(id, requestDto);
         }
@@ -328,26 +322,26 @@ public class PersonagemControllerTest {
                 verify(personagemService).deletar(id);
         }
 
-       
-
         @Test
         @DisplayName("Deve adicionar jutsu ao personagem com sucesso")
         @WithMockUser
         void adicionarJutsu_DeveRetornarPersonagemAtualizado() throws Exception {
                 Long id = 1L;
-                JutsuDTO jutsuDTO = new JutsuDTO();
-                jutsuDTO.setNome("Rasenshuriken");
-                jutsuDTO.setDano(100);
-                jutsuDTO.setConsumoDeChakra(50);
+                JutsuDTO jutsuDTO = JutsuDTO.builder()
+                                .nome("Rasenshuriken")
+                                .dano(100)
+                                .consumoDeChakra(50)
+                                .build();
 
-                PersonagemResponseDTO responseDto = new PersonagemResponseDTO();
-                responseDto.setId(id);
-                responseDto.setNome("Naruto Uzumaki");
-                responseDto.setIdade(17);
-                responseDto.setAldeia("Aldeia da Folha");
-                responseDto.setChakra(100);
-                responseDto.setTipoNinja("NINJUTSU");
-                responseDto.setJutsus(Arrays.asList("Rasengan", "Rasenshuriken"));
+                PersonagemResponseDTO responseDto = PersonagemResponseDTO.builder()
+                                .id(1L)
+                                .nome("Naruto Uzumaki")
+                                .idade(17)
+                                .aldeia("Aldeia da Folha")
+                                .chakra(100)
+                                .tipoNinja("NINJUTSU")
+                                .jutsus(Arrays.asList("Rasengan", "Rasenshuriken"))
+                                .build();
 
                 when(personagemService.adicionarJutsuDTO(id, jutsuDTO)).thenReturn(responseDto);
 
@@ -363,4 +357,3 @@ public class PersonagemControllerTest {
                 verify(personagemService).adicionarJutsuDTO(id, jutsuDTO);
         }
 }
-
