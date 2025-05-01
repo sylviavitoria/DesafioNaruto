@@ -163,7 +163,7 @@ public class BatalhaServiceTest {
     void deveRetornarVencedorQuandoDefensorFicaSemVidaAposAtaque() {
         defensor.setVida(30);
         NinjaDeTaijutsu atacanteSpy = spy(atacante);
-        
+
         doAnswer(invocation -> {
             Personagem defensor = invocation.getArgument(1);
             defensor.receberDano(50);
