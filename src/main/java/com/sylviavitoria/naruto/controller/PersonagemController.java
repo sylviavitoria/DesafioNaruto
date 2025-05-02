@@ -1,18 +1,13 @@
 package com.sylviavitoria.naruto.controller;
 
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +15,6 @@ import com.sylviavitoria.naruto.dto.JutsuDTO;
 import com.sylviavitoria.naruto.dto.PersonagemAtualizarDTO;
 import com.sylviavitoria.naruto.dto.PersonagemDTO;
 import com.sylviavitoria.naruto.dto.PersonagemResponseDTO;
-import com.sylviavitoria.naruto.model.Personagem;
 import com.sylviavitoria.naruto.service.PersonagemService;
 
 import java.util.Map;
