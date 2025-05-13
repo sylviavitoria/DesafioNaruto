@@ -263,7 +263,7 @@ public class PersonagemControllerTest {
                 mockMvc.perform(post("/api/v1/personagens")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(requestDto)))
-                                .andExpect(status().isOk())
+                                .andExpect(status().isCreated())
                                 .andExpect(jsonPath("$.id").value(1))
                                 .andExpect(jsonPath("$.nome").value("Naruto Uzumaki"))
                                 .andExpect(jsonPath("$.tipoNinja").value("NINJUTSU"));
@@ -348,7 +348,7 @@ public class PersonagemControllerTest {
                 mockMvc.perform(post("/api/v1/personagens/{id}/jutsus", id)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(jutsuDTO)))
-                                .andExpect(status().isOk())
+                                .andExpect(status().isCreated())
                                 .andExpect(jsonPath("$.id").value(1))
                                 .andExpect(jsonPath("$.jutsus").isArray())
                                 .andExpect(jsonPath("$.jutsus", hasSize(2)))
