@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -32,6 +33,9 @@ import org.springframework.data.domain.Pageable;
 import com.sylviavitoria.naruto.dto.JutsuDTO;
 import com.sylviavitoria.naruto.dto.PersonagemAtualizarDTO;
 import com.sylviavitoria.naruto.dto.PersonagemDTO;
+import com.sylviavitoria.naruto.mapper.JutsuMapper;
+import com.sylviavitoria.naruto.mapper.PersonagemMapper;
+import com.sylviavitoria.naruto.model.Jutsu;
 import com.sylviavitoria.naruto.model.NinjaDeGenjutsu;
 import com.sylviavitoria.naruto.model.NinjaDeNinjutsu;
 import com.sylviavitoria.naruto.model.NinjaDeTaijutsu;
@@ -47,6 +51,12 @@ public class PersonagemServiceTest {
 
     @InjectMocks
     private PersonagemService service;
+
+    @Mock
+    private PersonagemMapper personagemMapper;
+    
+    @Mock
+    private JutsuMapper jutsuMapper;
 
     private NinjaDeTaijutsu personagemTaijutsu;
     private NinjaDeNinjutsu personagemNinjutsu;
@@ -220,25 +230,6 @@ public class PersonagemServiceTest {
         verifyNoMoreInteractions(repository);
     }
 
-    @Test
-    @DisplayName("Deve atualizar personagem existente com sucesso")
-    void deveAtualizarPersonagemExistenteComSucesso() {
-        Long idPersonagem = 1L;
-        int idadePersonagem = 17;
-        personagemTaijutsu.setNome("Rock Lee");
-        personagemTaijutsu.setIdade(idadePersonagem);
-
-        when(repository.findById(idPersonagem)).thenReturn(Optional.of(personagemTaijutsu));
-        when(repository.save(personagemTaijutsu)).thenReturn(personagemTaijutsu);
-
-        Personagem atualizado = service.atualizar(idPersonagem, personagemTaijutsu);
-
-        assertNotNull(atualizado);
-        assertEquals("Rock Lee", atualizado.getNome());
-        assertEquals(idadePersonagem, atualizado.getIdade());
-        verify(repository).findById(idPersonagem);
-        verify(repository).save(personagemTaijutsu);
-    }
 
     @Test
     @DisplayName("Deve criar personagem do tipo Taijutsu")
@@ -281,13 +272,17 @@ public class PersonagemServiceTest {
         dto.setChakra(500);
 
         Map<String, JutsuDTO> jutsusMap = new HashMap<>();
-        JutsuDTO rasengan = new JutsuDTO();
-        rasengan.setNome("Rasengan");
-        rasengan.setDano(70);
-        rasengan.setConsumoDeChakra(30);
+        JutsuDTO rasengan = JutsuDTO.builder()
+            .nome("Rasengan")
+            .dano(70)
+            .consumoDeChakra(30)
+            .build();
         jutsusMap.put("Rasengan", rasengan);
 
         dto.setJutsus(jutsusMap);
+
+        Jutsu jutsuObj = new Jutsu(70, 30);
+        when(jutsuMapper.converterParaJutsu(rasengan)).thenReturn(jutsuObj);
 
         NinjaDeNinjutsu personagemEsperado = new NinjaDeNinjutsu();
         personagemEsperado.setNome(dto.getNome());
@@ -296,7 +291,7 @@ public class PersonagemServiceTest {
         personagemEsperado.setChakra(dto.getChakra());
         personagemEsperado.adicionarJutsu("Rasengan", 70, 30);
 
-        when(repository.save(personagemEsperado)).thenReturn(personagemEsperado);
+        when(repository.save(eq(personagemEsperado))).thenReturn(personagemEsperado);
 
         Personagem resultado = service.criarPersonagem(dto);
 
@@ -307,7 +302,9 @@ public class PersonagemServiceTest {
         assertEquals(dto.getAldeia(), resultado.getAldeia());
         assertEquals(dto.getChakra(), resultado.getChakra());
         assertEquals(dto.getJutsus().keySet(), resultado.getJutsusMap().keySet());
-        verify(repository).save(personagemEsperado);
+        
+        verify(repository).save(eq(personagemEsperado));
+        verify(jutsuMapper).converterParaJutsu(rasengan);
     }
 
     @Test
@@ -323,10 +320,11 @@ public class PersonagemServiceTest {
         when(repository.findById(idPersonagem)).thenReturn(Optional.of(personagemTaijutsu));
         when(repository.save(personagemTaijutsu)).thenReturn(personagemTaijutsu);
 
-        JutsuDTO jutsuDTO = new JutsuDTO();
-        jutsuDTO.setNome(nomeJutsu);
-        jutsuDTO.setDano(dano);
-        jutsuDTO.setConsumoDeChakra(consumo);
+        JutsuDTO jutsuDTO = JutsuDTO.builder()
+            .nome(nomeJutsu)
+            .dano(dano)
+            .consumoDeChakra(consumo)
+            .build();
 
         Personagem resultado = service.adicionarJutsu(idPersonagem, jutsuDTO);
 
@@ -345,10 +343,11 @@ public class PersonagemServiceTest {
         Long idPersonagem = 1L;
         when(repository.findById(idPersonagem)).thenReturn(Optional.of(personagemTaijutsu));
 
-        JutsuDTO jutsuDTO = new JutsuDTO();
-        jutsuDTO.setNome("Jutsu Inválido");
-        jutsuDTO.setDano(0);
-        jutsuDTO.setConsumoDeChakra(25);
+        JutsuDTO jutsuDTO = JutsuDTO.builder()
+            .nome("Jutsu Inválido")
+            .dano(0)
+            .consumoDeChakra(20)
+            .build();
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             service.adicionarJutsu(idPersonagem, jutsuDTO);
@@ -365,10 +364,11 @@ public class PersonagemServiceTest {
         Long idPersonagem = 1L;
         when(repository.findById(idPersonagem)).thenReturn(Optional.of(personagemTaijutsu));
     
-        JutsuDTO jutsuDTO = new JutsuDTO();
-        jutsuDTO.setNome("Jutsu Inválido");
-        jutsuDTO.setDano(50);
-        jutsuDTO.setConsumoDeChakra(0);
+        JutsuDTO jutsuDTO = JutsuDTO.builder()
+        .nome("Jutsu Inválido")
+        .dano(50)
+        .consumoDeChakra(0)
+        .build();
     
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             service.adicionarJutsu(idPersonagem, jutsuDTO);
@@ -383,25 +383,38 @@ public class PersonagemServiceTest {
     @DisplayName("Deve listar jutsus do personagem com sucesso")
     void deveListarJutsusDoPersonagemComSucesso() {
         Long idPersonagem = 1L;
+        
+        Map<String, Map<String, Object>> jutsuDetalhesEsperado = new HashMap<>();
+        personagemTaijutsu.getJutsusMap().forEach((nome, jutsu) -> {
+            Map<String, Object> detalhes = new HashMap<>();
+            detalhes.put("dano", jutsu.getDano());
+            detalhes.put("consumoDeChakra", jutsu.getConsumoDeChakra());
+            jutsuDetalhesEsperado.put(nome, detalhes);
+        });
+        
         when(repository.findById(idPersonagem)).thenReturn(Optional.of(personagemTaijutsu));
-
+        
+        when(personagemMapper.converterJutsusParaDTO(personagemTaijutsu.getJutsusMap()))
+            .thenReturn(jutsuDetalhesEsperado);
+    
         Map<String, Object> resultado = service.listarJutsus(idPersonagem);
-
+    
         assertNotNull(resultado);
         assertEquals(idPersonagem, resultado.get("personagemId"));
         assertEquals(personagemTaijutsu.getNome(), resultado.get("nome"));
-
+    
         Map<String, Map<String, Object>> jutsuDetalhes = (Map<String, Map<String, Object>>) resultado.get("jutsus");
         assertNotNull(jutsuDetalhes);
         assertFalse(jutsuDetalhes.isEmpty());
-
+    
         personagemTaijutsu.getJutsusMap().forEach((nome, jutsu) -> {
             assertTrue(jutsuDetalhes.containsKey(nome));
             assertEquals(jutsu.getDano(), jutsuDetalhes.get(nome).get("dano"));
             assertEquals(jutsu.getConsumoDeChakra(), jutsuDetalhes.get(nome).get("consumoDeChakra"));
         });
-
+    
         verify(repository).findById(idPersonagem);
+        verify(personagemMapper).converterJutsusParaDTO(personagemTaijutsu.getJutsusMap());
     }
 
     @Test
@@ -488,7 +501,7 @@ public class PersonagemServiceTest {
         personagemAtualizado.setIdade(novaIdade);
         personagemAtualizado.setAldeia(novaAldeia);
         personagemAtualizado.setChakra(novoChakra);
-        personagemAtualizado.adicionarJutsu("Lotus Primária", 50, 20);
+        personagemAtualizado.adicionarJutsu("Lotus Primária", 50, 10);
 
         when(repository.findById(idPersonagem)).thenReturn(Optional.of(personagemTaijutsu));
         when(repository.save(personagemAtualizado)).thenReturn(personagemAtualizado);

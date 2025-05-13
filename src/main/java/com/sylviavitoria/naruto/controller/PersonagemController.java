@@ -1,18 +1,14 @@
 package com.sylviavitoria.naruto.controller;
 
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +16,6 @@ import com.sylviavitoria.naruto.dto.JutsuDTO;
 import com.sylviavitoria.naruto.dto.PersonagemAtualizarDTO;
 import com.sylviavitoria.naruto.dto.PersonagemDTO;
 import com.sylviavitoria.naruto.dto.PersonagemResponseDTO;
-import com.sylviavitoria.naruto.model.Personagem;
 import com.sylviavitoria.naruto.service.PersonagemService;
 
 import java.util.Map;
@@ -63,12 +58,13 @@ public class PersonagemController {
     @PostMapping
     @Operation(summary = "Cria um novo personagem", description = "Cria um novo personagem com base nos dados fornecidos")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Personagem criado com sucesso"),
+            @ApiResponse(responseCode = "201", description = "Personagem criado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos"),
             @ApiResponse(responseCode = "500", description = "Erro interno do servidor")
     })
     public ResponseEntity<PersonagemResponseDTO> criar(@RequestBody PersonagemDTO dto) {
-        return ResponseEntity.ok(service.criarPersonagemDTO(dto));
+        PersonagemResponseDTO personagemCriado = service.criarPersonagemDTO(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(personagemCriado);
     }
 
     @PutMapping("/{id}")
@@ -113,7 +109,8 @@ public class PersonagemController {
                   "consumoDeChakra": 10
                 }
                 """)) @RequestBody JutsuDTO jutsuDTO) {
-        return ResponseEntity.ok(service.adicionarJutsuDTO(id, jutsuDTO));
+                PersonagemResponseDTO personagemAtualizado = service.adicionarJutsuDTO(id, jutsuDTO);
+                return ResponseEntity.status(HttpStatus.CREATED).body(personagemAtualizado);
     }
 
     @GetMapping("/{id}/jutsus")

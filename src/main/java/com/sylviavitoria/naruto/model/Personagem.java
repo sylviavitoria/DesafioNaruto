@@ -60,7 +60,7 @@ public abstract class Personagem {
 
     private void validarIdade(int idade) {
         if (idade < 0) {
-            throw new IllegalArgumentException("Idade não pode ser negativa");
+            throw new IllegalArgumentException("Idade deve ser maior que zero");
         }
     }
 
@@ -79,6 +79,11 @@ public abstract class Personagem {
     public void setNome(String nome) {
         validarNome(nome);
         this.nome = nome;
+    }
+
+    public void setIdade(int idade) {
+        validarIdade(idade);
+        this.idade = idade;
     }
 
     public void setChakra(int chakra) {

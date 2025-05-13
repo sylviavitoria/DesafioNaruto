@@ -25,6 +25,14 @@ public class BatalhaService {
         List<String> batalha = new ArrayList<>();
         
         try {
+
+            if (atacanteId.equals(defensorId)) {
+            String mensagem = "Nao E possivel atacar a si mesmo";
+                log.error(mensagem);
+            resultado.put("mensagem", "Não é possível atacar a si mesmo");
+            resultado.put("sucesso", false);
+            return resultado;
+        }
             Personagem atacante = personagemService.buscarPorId(atacanteId);
             Personagem defensor = personagemService.buscarPorId(defensorId);
             
@@ -72,6 +80,8 @@ public class BatalhaService {
             personagemService.salvar(atacante);
             personagemService.salvar(defensor);
             
+            resultado.put("sucesso", true);
+
             if (!ninjaAtacante.podeLutar()) {
                 batalha.add(atacante.getNome() + " não pode mais lutar!");
                 resultado.put("vencedor", defensor.getNome());
